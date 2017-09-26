@@ -34,6 +34,10 @@ int add(int par1,int par2) {
     return;
 }
 
+// int add2(int par1, int par2) {
+//     return par1+par2;
+// }
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
@@ -45,7 +49,9 @@ int __attribute__ ((__section__(".text.main")))
      count = 75;
      acum = 0;
 //      acum = outer(count);
-     int hola = add(1,2);
+     int hola1 = add(1,2);
+//      int hola2 = add2(1,2);
+     int z = 127; //linea absurda
 
 
     
