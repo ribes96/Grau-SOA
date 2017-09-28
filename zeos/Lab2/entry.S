@@ -50,4 +50,47 @@
       movl $__KERNEL_DS, %edx;    \
       movl %edx, %ds;           \
       movl %edx, %es
+      
+      
+      
+#define RESTORE_ALL \
+        popl %ebx;          \
+        popl %ecx;          \
+        popl %edx;          \
+        popl %esi;          \
+        popl %edi;         \
+        popl %ebp;          \
+        popl %eax;          \
+        popl %ds;           \
+        popl %es;           \
+        popl %fs;           \
+        popl %gs;           \
+        
+#define EOI \
+    movb $0x20, %al ; \
+    outb %al, $0x20 ; \
+    
+    
+    
+    
+/** HANDLERS
+/*****************************/
+/*****************************/
+/*****************************/
+
+ENTRY(keyboard_handler)
+    SAVE_ALL
+    call keyboard_routine
+    EOI
+    RESTORE_ALL
+    iret
+    
+ENTRY(system_call_handler)
+    SAVE_ALL
+    /** TODO Mirar si el servei és correcte (que sigui una entrada correcte)**/
+    call *sys_call_table(,%eax,4)
+    movl %eax, 0x18(%esp)
+    EOI
+    RESTORE_ALL
+    iret
 

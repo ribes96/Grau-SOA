@@ -12,6 +12,10 @@
 Gate idt[IDT_ENTRIES];
 Register    idtR;
 
+//CUSTOM 28/9/2017
+//Per que el compilador s'ho tragui
+void keyboard_handler();
+
 char char_map[] =
 {
   '\0','\0','1','2','3','4','5','6',
@@ -83,7 +87,31 @@ void setIdt()
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
+  
+  //CUSTOM 28/9/20147
+  setInterruptHandler(33, keyboard_handler, 0);
 
   set_idt_reg(&idtR);
 }
+
+//CUSTOM 28/9/2017
+void keyboard_routine() {
+    //Es crida des de keyboard_handler
+    Byte ch = inb(0x60); // Port
+    
+    Byte mode = ch & 0x80; //Agafar el bit de més pes
+    Byte code = ch & 0x7F; //Agafar la resta de bits
+    
+    
+    if (!mode) { //make, (key pressed)
+        char char_pressed = char_map[code];
+        if (char_pressed == '\0') char_pressed = 'C'; //Si no és imprimible
+        Byte a = 6;
+        printc_xy(a,a,char_pressed);
+        
+    }
+    
+}
+
+
 

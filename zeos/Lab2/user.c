@@ -3,15 +3,16 @@
 //Macros
 ///////////
 
-#define RESTORE_ALL \
-{\
-    
-}
+
+
 
 #define EOI \
-{\
-    
-}
+__asm__ __volatile__ (          \
+                                \
+                                \
+                                \
+);
+
 
 
 
