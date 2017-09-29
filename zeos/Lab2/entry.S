@@ -71,6 +71,11 @@
     outb %al, $0x20 ; \
     
     
+/**CUSOM 29/9/2017 **/
+/** Suposem que la hem de declarar nosaltres **/
+#define ENOSYS 38
+    
+    
     
     
 /** HANDLERS
@@ -86,11 +91,18 @@ ENTRY(keyboard_handler)
     iret
     
 ENTRY(system_call_handler)
-    SAVE_ALL
-    /** TODO Mirar si el servei és correcte (que sigui una entrada correcte)**/
+    SAVE_ALL        /** Save the current context **/
+    cmpl $0,%eax    /** Is syscall negative?**/
+    jl err
+    cmpl $MAX_SYSCALL, %eax
+    jg err
     call *sys_call_table(,%eax,4)
+    EOI             /** TODO posar més tard, quan toqui **/
+    jmp fin
+err:
+    movl $-ENOSYS, %eax
+fin:
     movl %eax, 0x18(%esp)
-    EOI
     RESTORE_ALL
     iret
 

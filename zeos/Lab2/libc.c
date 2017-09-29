@@ -43,3 +43,45 @@ int strlen(char *a)
   return i;
 }
 
+
+//CUSTOM 29/9/2017
+int write(int fd, char *buffer, int size) {
+    // eax, ecx i edx es poden fer servir sense problemes, perque son caller-saved
+    //ebx no ho és, i per tant l'hem de salvar
+    int retorno = 0;    //No té per què tenir valor
+    __asm__ __volatile__(
+        "pushl %ebx;"            //Salvar ebx
+        "movl 8(%ebp), %ebx;"
+        "movl 12(%ebp), %ecx;"
+        "movl 16(%ebp), %edx;"
+        "movl $4, %eax;"
+        "INT $0x80;"
+        "popl %ebx;"             //Tornar el valor de ebx
+////////////////
+// TODO Això ha d'estar, però no sabem com fer-ho
+//////////////////
+//         "movl %eax, %0;"
+//         :"=r"(retorno) 
+//         :"0" (retorno),"r" (retorno)
+            );
+//     if (retorno < 0) {
+//         errno = -retorno;
+//         return -1;
+//     }
+//     return retorno;  //És el bo
+    
+    
+    //temporal
+    return;
+}
+
+
+//No tenim clar si aquesta funció va aquí
+// ni qué ha de fer
+// TODO està malament
+void perror() {
+    char * missatge = "Hi ha un error";
+    write(2, missatge, strlen(missatge));
+}
+
+

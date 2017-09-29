@@ -16,6 +16,9 @@ Register    idtR;
 //Per que el compilador s'ho tragui
 void keyboard_handler();
 
+void system_call_handler();
+
+
 char char_map[] =
 {
   '\0','\0','1','2','3','4','5','6',
@@ -90,6 +93,7 @@ void setIdt()
   
   //CUSTOM 28/9/20147
   setInterruptHandler(33, keyboard_handler, 0);
+  setInterruptHandler(0x80, system_call_handler, 0);
 
   set_idt_reg(&idtR);
 }
@@ -106,11 +110,32 @@ void keyboard_routine() {
     if (!mode) { //make, (key pressed)
         char char_pressed = char_map[code];
         if (char_pressed == '\0') char_pressed = 'C'; //Si no és imprimible
-        Byte a = 6;
+        Byte a = 0;
         printc_xy(a,a,char_pressed);
         
     }
     
+}
+
+int sys_write(int fd, char * buffer, int size) {
+    int escriptura = 1;
+    int lectura = 0;
+    int fd_status = check_fd(fd, escriptura);
+    if ( fd_status < 0) {
+        return fd_status;
+    }
+    if (!buffer) { //Si el buffer és NULL
+        return -1;  //TODO Retornar el codi adequat
+    }
+    if (size < 0) {
+        return -1;  //TODO Retornar el code adequat
+    }
+    
+    char * KERNEL_SPACE = 0;      //TODO Mirar quina direcció és la real
+    copy_from_user(buffer, KERNEL_SPACE, size);
+    int bytes_written;
+    bytes_written = sys_write_console(KERNEL_SPACE, size);
+    return bytes_written;
 }
 
 

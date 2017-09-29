@@ -1,20 +1,5 @@
 #include <libc.h>
 
-//Macros
-///////////
-
-
-
-
-#define EOI \
-__asm__ __volatile__ (          \
-                                \
-                                \
-                                \
-);
-
-
-
 
 char buff[24];
 
@@ -61,13 +46,13 @@ int __attribute__ ((__section__(".text.main")))
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
      /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
      
-     long count, acum;
-     count = 75;
-     acum = 0;
+//      long count, acum;
+//      count = 75;
+//      acum = 0;
 //      acum = outer(count);
-     int hola1 = add(1,2);
+//      int hola1 = add(1,2);
 //      int hola2 = add2(1,2);
-     int z = 127; //linea absurda
+//      int z = 127; //linea absurda
 
 
     
