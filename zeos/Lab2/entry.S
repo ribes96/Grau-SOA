@@ -105,4 +105,16 @@ fin:
     movl %eax, 0x18(%esp)
     RESTORE_ALL
     iret
+    
+
+/**
+Alone Ribes
+CUSTOM 2/10/2017
+**/
+ENTRY(clock_handler)
+    SAVE_ALL
+    call clock_routine
+    EOI
+    RESTORE_ALL
+    iret
 

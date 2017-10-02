@@ -16,6 +16,10 @@ Register    idtR;
 //Per que el compilador s'ho tragui
 void keyboard_handler();
 
+//Alone Ribes
+//2/10/2017
+void clock_handler();
+
 void system_call_handler();
 
 
@@ -93,6 +97,10 @@ void setIdt()
   
   //CUSTOM 28/9/20147
   setInterruptHandler(33, keyboard_handler, 0);
+  
+  //Alone Ribes CUSTOM 2/10/2017
+  setInterruptHandler(32, clock_handler, 0);
+  
   setInterruptHandler(0x80, system_call_handler, 0);
 
   set_idt_reg(&idtR);
@@ -136,6 +144,12 @@ int sys_write(int fd, char * buffer, int size) {
     int bytes_written;
     bytes_written = sys_write_console(KERNEL_SPACE, size);
     return bytes_written;
+}
+
+//Alone Ribes
+//CUSTOM 2/10/2017
+void clock_routine() {
+    
 }
 
 

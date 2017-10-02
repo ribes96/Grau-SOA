@@ -50,29 +50,21 @@ int write(int fd, char *buffer, int size) {
     //ebx no ho és, i per tant l'hem de salvar
     int retorno = 0;    //No té per què tenir valor
     __asm__ __volatile__(
-        "pushl %ebx;"            //Salvar ebx
-        "movl 8(%ebp), %ebx;"
-        "movl 12(%ebp), %ecx;"
-        "movl 16(%ebp), %edx;"
-        "movl $4, %eax;"
+        "pushl %%ebx;"            //Salvar ebx
+        "movl 8(%%ebp), %%ebx;"
+        "movl 12(%%ebp), %%ecx;"
+        "movl 16(%%ebp), %%edx;"
+        "movl $4, %%eax;"
         "INT $0x80;"
-        "popl %ebx;"             //Tornar el valor de ebx
-////////////////
-// TODO Això ha d'estar, però no sabem com fer-ho
-//////////////////
-//         "movl %eax, %0;"
-//         :"=r"(retorno) 
-//         :"0" (retorno),"r" (retorno)
+        "popl %%ebx;"             //Tornar el valor de ebx
+        "movl %%eax, %0;"
+        :"=r"(retorno) 
             );
-//     if (retorno < 0) {
-//         errno = -retorno;
-//         return -1;
-//     }
-//     return retorno;  //És el bo
-    
-    
-    //temporal
-    return;
+    if (retorno < 0) {
+        errno = -retorno;
+        return -1;
+    }
+    return retorno;  //És el bo
 }
 
 
@@ -83,5 +75,7 @@ void perror() {
     char * missatge = "Hi ha un error";
     write(2, missatge, strlen(missatge));
 }
+
+//TODO fer la funció errno, que no sabem qué ha de fer
 
 
