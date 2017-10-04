@@ -7,6 +7,9 @@
 #include <hardware.h>
 #include <io.h>
 
+//CUSTOM 4/10/2017
+#include <errno.h>
+
 #include <zeos_interrupt.h>
 
 Gate idt[IDT_ENTRIES];
@@ -16,18 +19,17 @@ Register    idtR;
 //Per que el compilador s'ho tragui
 void keyboard_handler();
 
-//Alone Ribes
 //2/10/2017
 void clock_handler();
 
 void system_call_handler();
 
-//Alone Ribes
 //Custom 2/10/2017
 
 #define KERNEL_BUFFER_SPACE 1024
 
-char KERNEL_BUFFER[KERNEL_BUFFER_SPACE]
+char KERNEL_BUFFER[KERNEL_BUFFER_SPACE];  //CONSULTAR potser s'hauria de declarar al .h
+
 
 
 char char_map[] =
@@ -105,10 +107,10 @@ void setIdt()
   //CUSTOM 28/9/20147
   setInterruptHandler(33, keyboard_handler, 0);
   
-  //Alone Ribes CUSTOM 2/10/2017
+  //CUSTOM 2/10/2017
   setInterruptHandler(32, clock_handler, 0);
   
-  setInterruptHandler(0x80, system_call_handler, 0);
+  setTrapHandler(0x80, system_call_handler, 3);
 
   set_idt_reg(&idtR);
 }
@@ -132,10 +134,10 @@ void keyboard_routine() {
     
 }
 
-//TODO posar els codis d'error bén posats en algun altre fitxer
-//Alone Ribes
 //Custom 2/10/2017
-#define EFAULT 14
+// #define EFAULT 14
+
+//CONSULTAR si posem els error en un fitxer apart
 
 int sys_write(int fd, char * buffer, int size) {
     int escriptura = 1;
@@ -145,25 +147,30 @@ int sys_write(int fd, char * buffer, int size) {
         return fd_status;
     }
     if (!buffer) { //Si el buffer és NULL
-        return -EFAULT;  //NOT_TODO Retornar el codi adequat
+        return -EFAULT;
     }
     if (size < 0) {
-        return -1;  //TODO Retornar el code adequat
+        return -1;  //Retornar el code adequat
+        
+        //CONSULTAR qué hem de fer
                     // Realment write no dona cap error amb un tamany negatiu. No escriu res
     }
     
-//     char * KERNEL_SPACE = 0;      //notTODO Mirar quina direcció és la real
-    //Alone Ribes
-    copy_from_user(buffer, &KERNEL_BUFFER, size);
+    copy_from_user(buffer, KERNEL_BUFFER, size);
     int bytes_written;
-    bytes_written = sys_write_console(KERNEL_SPACE, size);
+    bytes_written = sys_write_console(KERNEL_BUFFER, size);
     return bytes_written;
 }
 
-//Alone Ribes
 //CUSTOM 2/10/2017
 void clock_routine() {
-    
+    ++zeos_ticks;
+    zeos_show_clock();
+}
+
+//CUSTOM 4/10/2017
+int sys_gettime() {
+    return zeos_ticks;
 }
 
 

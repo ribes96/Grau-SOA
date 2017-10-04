@@ -58,9 +58,10 @@ int write(int fd, char *buffer, int size) {
         "INT $0x80;"
         "popl %%ebx;"             //Tornar el valor de ebx
         "movl %%eax, %0;"
-        :"=r"(retorno) 
+        :"=r"(retorno)
+        :
+        :"%ecx", "%edx", "%eax"
             );
-    //TODO potser hauriem d'indicar quins registres perden són sobre-escrits
     if (retorno < 0) {
         errno = -retorno;
         return -1;
@@ -69,12 +70,21 @@ int write(int fd, char *buffer, int size) {
 }
 
 
-//No tenim clar si aquesta funció va aquí
-// ni qué ha de fer
-// notTODO està malament
-void perror() {
-    char * missatge = "Hi ha un error";
-    // De moment ho treiem per l'estandar, perque qualsevol altra peta
+void perror() {    
+    char * missatge = "Syscall failed: ";
+    //CONSULTAR si és adequat cridar a write des d'aquí sapiguent que es carrega errno
+    char err[10];
+    itoa(errno, err);
     write(1, missatge, strlen(missatge));
+    write(1, err, strlen(err));
+}
+
+//CUSTOM 4/10/2017
+int gettime() {
+    __asm__ __volatile__(
+        "movl $10, %eax;"
+        "INT $0x80"     //No cal fer més perque el resultat ja és a eax
+            );
+    return;
 }
 

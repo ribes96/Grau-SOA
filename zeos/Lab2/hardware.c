@@ -107,10 +107,9 @@ __asm__ __volatile__(
   
   
   //CUSTOM 28/9/2017
-  : "i" (0xfd)       /* 0xFD = 11111101 -> only keyboard enabled */
-  
-  //TODO afegir permisos per al rellotge
-  : "%al" );
+//   : "i" (0xfd)       /* 0xFD = 11111101 -> only keyboard enabled */
+    : "i" (0xfc)       /* 0xFD = 11111100 -> keyboard and clock enabled */
+    : "%al" );
 }
 
 void delay(void)

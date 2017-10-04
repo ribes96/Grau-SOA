@@ -12,6 +12,9 @@
 extern Gate idt[IDT_ENTRIES];
 extern Register idtR;
 
+//CUSTOM 4/10/2017
+unsigned int zeos_ticks;
+
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 

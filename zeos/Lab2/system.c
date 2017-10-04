@@ -71,6 +71,9 @@ int __attribute__((__section__(".text.main")))
   set_seg_regs(__KERNEL_DS, __KERNEL_DS, (DWord) &protected_tasks[5]);
 
   /*** DO *NOT* ADD ANY CODE IN THIS ROUTINE BEFORE THIS POINT ***/
+  
+  //CUSTOM 4/10/2017
+  zeos_ticks = 0;
 
   printk("Kernel Loaded!    ");
 

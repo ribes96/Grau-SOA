@@ -97,7 +97,7 @@ ENTRY(system_call_handler)
     cmpl $MAX_SYSCALL, %eax
     jg err
     call *sys_call_table(,%eax,4)
-    EOI             /** TODO posar més tard, quan toqui **/
+    EOI            
     jmp fin
 err:
     movl $-ENOSYS, %eax
@@ -108,7 +108,6 @@ fin:
     
 
 /**
-Alone Ribes
 CUSTOM 2/10/2017
 **/
 ENTRY(clock_handler)

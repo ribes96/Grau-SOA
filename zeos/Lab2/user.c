@@ -54,7 +54,17 @@ int __attribute__ ((__section__(".text.main")))
 //      int hola2 = add2(1,2);
 //      int z = 127; //linea absurda
 
-
     
-  while(1) { }
+    int ok = write(1, 0, strlen("hola hola")); //Produim l'error aposta
+    if (ok < 0) {
+        perror();
+    }
+  while(1) {
+      unsigned int t = gettime();
+      //CONSULTAR perque treu vàries vegades el mateix número
+      char ch[30];
+      itoa(t, ch);
+//       write(1,ch,strlen(ch));
+//       write(1,"\n",strlen("\n"));
+    }
 }

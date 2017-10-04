@@ -40,7 +40,6 @@ fin:
 
 
 
-
 .globl clock_handler; .type clock_handler, @function; .align 0; clock_handler:
     pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
     call clock_routine
