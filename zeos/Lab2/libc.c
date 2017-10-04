@@ -60,6 +60,7 @@ int write(int fd, char *buffer, int size) {
         "movl %%eax, %0;"
         :"=r"(retorno) 
             );
+    //TODO potser hauriem d'indicar quins registres perden són sobre-escrits
     if (retorno < 0) {
         errno = -retorno;
         return -1;
@@ -70,12 +71,10 @@ int write(int fd, char *buffer, int size) {
 
 //No tenim clar si aquesta funció va aquí
 // ni qué ha de fer
-// TODO està malament
+// notTODO està malament
 void perror() {
     char * missatge = "Hi ha un error";
-    write(2, missatge, strlen(missatge));
+    // De moment ho treiem per l'estandar, perque qualsevol altra peta
+    write(1, missatge, strlen(missatge));
 }
-
-//TODO fer la funció errno, que no sabem qué ha de fer
-
 

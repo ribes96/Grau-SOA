@@ -22,6 +22,13 @@ void clock_handler();
 
 void system_call_handler();
 
+//Alone Ribes
+//Custom 2/10/2017
+
+#define KERNEL_BUFFER_SPACE 1024
+
+char KERNEL_BUFFER[KERNEL_BUFFER_SPACE]
+
 
 char char_map[] =
 {
@@ -125,6 +132,11 @@ void keyboard_routine() {
     
 }
 
+//TODO posar els codis d'error bén posats en algun altre fitxer
+//Alone Ribes
+//Custom 2/10/2017
+#define EFAULT 14
+
 int sys_write(int fd, char * buffer, int size) {
     int escriptura = 1;
     int lectura = 0;
@@ -133,14 +145,16 @@ int sys_write(int fd, char * buffer, int size) {
         return fd_status;
     }
     if (!buffer) { //Si el buffer és NULL
-        return -1;  //TODO Retornar el codi adequat
+        return -EFAULT;  //NOT_TODO Retornar el codi adequat
     }
     if (size < 0) {
         return -1;  //TODO Retornar el code adequat
+                    // Realment write no dona cap error amb un tamany negatiu. No escriu res
     }
     
-    char * KERNEL_SPACE = 0;      //TODO Mirar quina direcció és la real
-    copy_from_user(buffer, KERNEL_SPACE, size);
+//     char * KERNEL_SPACE = 0;      //notTODO Mirar quina direcció és la real
+    //Alone Ribes
+    copy_from_user(buffer, &KERNEL_BUFFER, size);
     int bytes_written;
     bytes_written = sys_write_console(KERNEL_SPACE, size);
     return bytes_written;

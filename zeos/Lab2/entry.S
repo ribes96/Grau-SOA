@@ -71,7 +71,7 @@
     outb %al, $0x20 ; \
     
     
-/**CUSOM 29/9/2017 **/
+/**CUSTOM 29/9/2017 **/
 /** Suposem que la hem de declarar nosaltres **/
 #define ENOSYS 38
     
