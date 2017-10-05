@@ -68,11 +68,7 @@ int sys_write(int fd, char * buffer, int size) {
 
     }
     if (size < 0) {
-        return -1;  //Retornar el code adequat
-        
-        //CONSULTAR qué hem de fer
-                    // Realment write no dona cap error amb un tamany negatiu a linux
-                    // No escriu res
+        return -EINVAL;
     }
     
     

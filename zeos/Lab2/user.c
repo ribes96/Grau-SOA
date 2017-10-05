@@ -29,10 +29,6 @@ int add(int par1,int par2) {
     return;
 }
 
-// int add2(int par1, int par2) {
-//     return par1+par2;
-// }
-
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
@@ -45,23 +41,5 @@ int __attribute__ ((__section__(".text.main")))
 //      acum = 0;
 //      acum = outer(count);
 
-
-    char * m = "Missatge de 21 bytes\n";
-    int ok = write(1, m, strlen(m)); //Produim l'error aposta
-    if (ok < 0) {
-        perror();
-    }
-    else {
-        char c[30];
-        itoa(ok,c);
-        write(1,c,strlen(c));
-        write(1,"\n",strlen("\n"));
-    }
-  while(1) {
-//       unsigned int t = gettime();
-//       char ch[30];
-//       itoa(t, ch);
-//       write(1,ch,strlen(ch));
-//       write(1,"\n",strlen("\n"));
-    }
+  while(1) {}
 }
