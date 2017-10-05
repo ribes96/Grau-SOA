@@ -20,4 +20,8 @@ int fork();
 
 void exit();
 
+//CUSTOM 5/10/2017
+void perror();
+int gettime();
+
 #endif  /* __LIBC_H__ */

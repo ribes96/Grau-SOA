@@ -13,8 +13,16 @@
 
 #include <sched.h>
 
+#include <errno.h>
+
 #define LECTURA 0
 #define ESCRIPTURA 1
+
+unsigned int zeos_ticks;
+
+#define KERNEL_BUFFER_SPACE 1024
+
+char KERNEL_BUFFER[KERNEL_BUFFER_SPACE];
 
 int check_fd(int fd, int permissions)
 {
@@ -44,4 +52,45 @@ int sys_fork()
 
 void sys_exit()
 {  
+}
+
+
+//Custom 2/10/2017
+int sys_write(int fd, char * buffer, int size) {
+    int escriptura = 1;
+    int lectura = 0;
+    int fd_status = check_fd(fd, escriptura);
+    if ( fd_status < 0) {
+        return fd_status;
+    }
+    if (!buffer) { //Si el buffer és NULL
+        return -EFAULT;
+
+    }
+    if (size < 0) {
+        return -1;  //Retornar el code adequat
+        
+        //CONSULTAR qué hem de fer
+                    // Realment write no dona cap error amb un tamany negatiu a linux
+                    // No escriu res
+    }
+    
+    
+    //Per si buffer no hi cap a KERNEL_BUFFER
+    int s = size;
+    char *b = buffer;
+    int written_count = 0;
+    while (s > KERNEL_BUFFER_SPACE) {
+        copy_from_user(b, KERNEL_BUFFER, KERNEL_BUFFER_SPACE);
+        written_count += sys_write_console(KERNEL_BUFFER, KERNEL_BUFFER_SPACE);
+        b += KERNEL_BUFFER_SPACE;
+        s -= KERNEL_BUFFER_SPACE;
+        
+    }
+    if (s) { //Si encara en queda un
+        copy_from_user(b, KERNEL_BUFFER, s);
+        written_count += sys_write_console(KERNEL_BUFFER, s);
+    }
+    
+    return written_count;
 }

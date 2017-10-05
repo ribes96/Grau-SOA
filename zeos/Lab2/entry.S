@@ -97,12 +97,12 @@ ENTRY(system_call_handler)
     cmpl $MAX_SYSCALL, %eax
     jg err
     call *sys_call_table(,%eax,4)
-    EOI            
+    movl %eax, 0x18(%esp)
+    EOI       
     jmp fin
 err:
     movl $-ENOSYS, %eax
-fin:
-    movl %eax, 0x18(%esp)
+fin:    
     RESTORE_ALL
     iret
     

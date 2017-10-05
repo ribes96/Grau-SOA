@@ -26,9 +26,9 @@ void system_call_handler();
 
 //Custom 2/10/2017
 
-#define KERNEL_BUFFER_SPACE 1024
+extern unsigned int zeos_ticks;
 
-char KERNEL_BUFFER[KERNEL_BUFFER_SPACE];  //CONSULTAR potser s'hauria de declarar al .h
+
 
 
 
@@ -134,33 +134,7 @@ void keyboard_routine() {
     
 }
 
-//Custom 2/10/2017
-// #define EFAULT 14
 
-//CONSULTAR si posem els error en un fitxer apart
-
-int sys_write(int fd, char * buffer, int size) {
-    int escriptura = 1;
-    int lectura = 0;
-    int fd_status = check_fd(fd, escriptura);
-    if ( fd_status < 0) {
-        return fd_status;
-    }
-    if (!buffer) { //Si el buffer és NULL
-        return -EFAULT;
-    }
-    if (size < 0) {
-        return -1;  //Retornar el code adequat
-        
-        //CONSULTAR qué hem de fer
-                    // Realment write no dona cap error amb un tamany negatiu. No escriu res
-    }
-    
-    copy_from_user(buffer, KERNEL_BUFFER, size);
-    int bytes_written;
-    bytes_written = sys_write_console(KERNEL_BUFFER, size);
-    return bytes_written;
-}
 
 //CUSTOM 2/10/2017
 void clock_routine() {

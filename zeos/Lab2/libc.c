@@ -50,33 +50,27 @@ int write(int fd, char *buffer, int size) {
     //ebx no ho és, i per tant l'hem de salvar
     int retorno = 0;    //No té per què tenir valor
     __asm__ __volatile__(
-        "pushl %%ebx;"            //Salvar ebx
-        "movl 8(%%ebp), %%ebx;"
-        "movl 12(%%ebp), %%ecx;"
-        "movl 16(%%ebp), %%edx;"
-        "movl $4, %%eax;"
         "INT $0x80;"
-        "popl %%ebx;"             //Tornar el valor de ebx
-        "movl %%eax, %0;"
-        :"=r"(retorno)
-        :
-        :"%ecx", "%edx", "%eax"
-            );
+        :"=a"(retorno)
+        :"b" (fd), "c" (buffer), "d" (size), "a" (4)
+       );
     if (retorno < 0) {
         errno = -retorno;
         return -1;
     }
-    return retorno;  //És el bo
+    return retorno;
 }
 
 
 void perror() {    
-    char * missatge = "Syscall failed: ";
-    //CONSULTAR si és adequat cridar a write des d'aquí sapiguent que es carrega errno
+    char * missatge = "\nSyscall failed: ";
     char err[10];
     itoa(errno, err);
+//     itoa(14, err);
     write(1, missatge, strlen(missatge));
     write(1, err, strlen(err));
+    
+    write(1, "\n", strlen("\n"));
 }
 
 //CUSTOM 4/10/2017

@@ -21,12 +21,6 @@ long outer(long n) {
     return acum;
 }
 
-// int add2(int a, int b) {
-//     int n = a+b;
-//     return n;
-//     
-// }
-
 int add(int par1,int par2) {
     __asm__(
         "mov 0x8(%ebp),%eax;"
@@ -50,20 +44,23 @@ int __attribute__ ((__section__(".text.main")))
 //      count = 75;
 //      acum = 0;
 //      acum = outer(count);
-//      int hola1 = add(1,2);
-//      int hola2 = add2(1,2);
-//      int z = 127; //linea absurda
 
-    
-    int ok = write(1, 0, strlen("hola hola")); //Produim l'error aposta
+
+    char * m = "Missatge de 21 bytes\n";
+    int ok = write(1, m, strlen(m)); //Produim l'error aposta
     if (ok < 0) {
         perror();
     }
+    else {
+        char c[30];
+        itoa(ok,c);
+        write(1,c,strlen(c));
+        write(1,"\n",strlen("\n"));
+    }
   while(1) {
-      unsigned int t = gettime();
-      //CONSULTAR perque treu vàries vegades el mateix número
-      char ch[30];
-      itoa(t, ch);
+//       unsigned int t = gettime();
+//       char ch[30];
+//       itoa(t, ch);
 //       write(1,ch,strlen(ch));
 //       write(1,"\n",strlen("\n"));
     }
