@@ -71,17 +71,30 @@ struct list_head readyqueue;
 
 void init_idle (void)
 {
-    struct list_head * node = freequeue->next;
+    struct list_head * node = list_first(&freequeue);
+    list_del(node);
+    
+//     struct task_struct * PCB = list_head_to_task_struct(node);
+    idle_task = list_head_to_task_struct(node);
+    idle_task->PID = 0;
+    
+    allocate_DIR(idle_task);
+}
+
+//Custom 19/10/2017
+void init_task1(void)
+{
+    struct list_head * node = list_first(&freequeue);
     list_del(node);
     
     struct task_struct * PCB = list_head_to_task_struct(node);
-    PCB->PID = 0;
+    PCB->PID = 1;
     
     allocate_DIR(PCB);
-}
-
-void init_task1(void)
-{
+    set_user_pages(PCB);
+    //TODO
+    tss.esp0 = &((union task_union)PCB->stack[KERNEL_STACK_SIZE]);
+    set_cr3(PCB->dir_pages_baseAddr);
 }
 
 
@@ -93,34 +106,53 @@ void init_sched(){
     //Inicialització de freequeue
     INIT_LIST_HEAD(&freequeue);
     int i;
-    struct list_head * p = &freequeue;
     for (i = 0; i < NR_TASKS; ++i) {
-        //Consultar: és veritat?
+        list_add(task[i].task.list, &freequeue);
         
-        //El tamany d'un element de freequeue
-        int taman_task_union = sizeof(unsigned long)*KERNEL_STACK_SIZE;
-        
-        //La dirección del següent
-        list_add((struct task_struct * )(*p + taman_task_union), p);
-        p = p->next;
     }
-    //////////////////////////////
     
+    //////////////////////////////
+
     //Inicialització de readyqueue
     INIT_LIST_HEAD(&readyqueue);
-    
+
     //////////////////////////////
+
+    
+//     for (i = 0; i < NR_TASKS; ++i) {
+//         
+//         
+//         //El tamany d'un element de freequeue
+//         int taman_task_union = sizeof(unsigned long)*KERNEL_STACK_SIZE;
+//         
+//         //La dirección del següent
+//         list_add((struct task_struct * )(*p + taman_task_union), p);
+//         p = p->next;
+//     }
+
     
 }
 
 //Feta per nosaltres
-//TODO
 void inner_task_switch(union task_union*t) {
+    set_cr3(get_DIR(t->task));
+    tss.esp0 = &(t->stack[KERNEL_STACK_SIZE]);
+    
+    //En dos troços per evitar errors
         __asm__ __volatile__(
-        "pushl %esi"
-        :
-        :
-            );
+            "movl %%ebp, %%eax"
+            :"=a" (current()->kernel_esp)
+            :
+            :"eax"
+                );
+        __asm__ __volatile__(
+            "movl %%ebx, %%esp"
+            "popl %%ebp"
+            "ret"
+            :
+            :"b" (t->task.kernel_esp)
+            :"ebx"
+                );
 }
 
 

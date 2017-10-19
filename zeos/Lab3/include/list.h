@@ -103,10 +103,6 @@ int list_empty(const struct list_head *head);
 #define list_entry(ptr, type, member) \
             ((type *)((char *)(ptr)-(unsigned long)(&((type *)0)->member)))
             
-            
-            ((struct task_struct *)
-            ((char *)(l)-
-            (unsigned long)(&((struct task_struct *)0)->list)))
 
 /**
  * list_for_each	-	iterate over a list

@@ -19,8 +19,7 @@ struct task_struct {
   page_table_entry * dir_pages_baseAddr;
   
   
-  //Consultar: hem de crear kernel_esp??
-  //TODO está mal
+  
   unsigned long kernel_esp;
   
   //Custom 11/10/2017
