@@ -82,3 +82,28 @@ int gettime() {
     return;
 }
 
+
+
+int getpid() {
+    __asm__ __volatile__(
+        "INT $0x80;"
+        :
+        :"a" (20)   //Input
+            );
+    return;
+}
+
+int fork() {
+    int retorno = 0;    //No té per què tenir valor
+    __asm__ __volatile__(
+        "INT $0x80;"
+        :"=a"(retorno)
+        :"a" (2)
+       );
+    if (retorno < 0) {
+        errno = -retorno;
+        return -1;
+    }
+    return retorno;
+}
+

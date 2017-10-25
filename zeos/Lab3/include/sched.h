@@ -23,7 +23,8 @@ struct task_struct {
   unsigned long kernel_esp;
   
   //Custom 11/10/2017
-  struct list_head list;
+  //Consultar si és pointer o directament
+  struct list_head * list;
 };
 
 union task_union {

@@ -69,6 +69,11 @@ struct list_head freequeue;
 //Conté els "processos" que estan preparats per fer servir CPU
 struct list_head readyqueue;
 
+
+//Custom 25/10/2017
+//Consultar si és així (extern a sched.h)
+struct task_struct *idle_task;
+
 void init_idle (void)
 {
     struct list_head * node = list_first(&freequeue);
@@ -92,8 +97,8 @@ void init_task1(void)
     
     allocate_DIR(PCB);
     set_user_pages(PCB);
-    //TODO
-    tss.esp0 = &((union task_union)PCB->stack[KERNEL_STACK_SIZE]);
+    union task_union *t = (union task_union * )PCB;
+    tss.esp0 = (DWord) &(t->stack[KERNEL_STACK_SIZE]);
     set_cr3(PCB->dir_pages_baseAddr);
 }
 
@@ -107,6 +112,14 @@ void init_sched(){
     INIT_LIST_HEAD(&freequeue);
     int i;
     for (i = 0; i < NR_TASKS; ++i) {
+        /////////////////////////
+        ///////////////////////
+        //// Consulta //////////
+        // fa un page_fault_handler //
+        // quan accedeix al primer paràmetre//
+        //////////////////////////////////////
+        ///////////////////////////////////////
+        //TODO
         list_add(task[i].task.list, &freequeue);
         
     }
@@ -135,38 +148,61 @@ void init_sched(){
 
 //Feta per nosaltres
 void inner_task_switch(union task_union*t) {
-    set_cr3(get_DIR(t->task));
-    tss.esp0 = &(t->stack[KERNEL_STACK_SIZE]);
+    set_cr3(get_DIR(&(t->task)));
+    tss.esp0 = (DWord) &(t->stack[KERNEL_STACK_SIZE]);
     
     //En dos troços per evitar errors
+//         __asm__ __volatile__(
+//             "movl %%ebp, %%eax"
+//             :"=a" (current()->kernel_esp)
+//             :
+//             :"eax"
+//                 );
+//     
+// 
+//         __asm__ __volatile__(
+//             "movl %%ebx, %%esp"
+//             "popl %%ebp"
+//             "ret"
+//             :
+//             :"b" (t->task.kernel_esp)
+//             :"ebx"
+//                 );
+        
+        
+        
+        
+        
+    /// Consultar si és correcte
+    //////////////////////////////
         __asm__ __volatile__(
-            "movl %%ebp, %%eax"
-            :"=a" (current()->kernel_esp)
+            "movl %%ebp, %0\n\t"
+            :"=g" (current()->kernel_esp)
             :
-            :"eax"
+//             :"eax"
                 );
         __asm__ __volatile__(
-            "movl %%ebx, %%esp"
-            "popl %%ebp"
-            "ret"
+            "movl %0, %%esp\n\t"
+            "popl %%ebp\n\t"
+            "ret\n\t"
             :
-            :"b" (t->task.kernel_esp)
-            :"ebx"
+            :"g" (t->task.kernel_esp)
                 );
+        /////////////////////////////////
 }
 
 
 void task_switch(union task_union*t) {
     __asm__ __volatile__(
-        "pushl %esi"
-        "pushl %edi"
-        "pushl %ebx"
+        "pushl %esi\n\t"
+        "pushl %edi\n\t"
+        "pushl %ebx\n\t"
             );
     inner_task_switch(t);
     __asm__ __volatile__(
-        "popl %ebx"
-        "popl %edi"
-        "popl %esi"
+        "popl %ebx\n\t"
+        "popl %edi\n\t"
+        "popl %esi\n\t"
             );
 }
 

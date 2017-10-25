@@ -21,13 +21,13 @@ long outer(long n) {
     return acum;
 }
 
-int add(int par1,int par2) {
-    __asm__(
-        "mov 0x8(%ebp),%eax;"
-        "add 0xc(%ebp),%eax;"
-    );
-    return;
-}
+// int add(int par1,int par2) {
+//     __asm__(
+//         "mov 0x8(%ebp),%eax;"
+//         "add 0xc(%ebp),%eax;"
+//     );
+//     return;
+// }
 
 int __attribute__ ((__section__(".text.main")))
   main(void)
@@ -41,5 +41,6 @@ int __attribute__ ((__section__(".text.main")))
 //      acum = 0;
 //      acum = outer(count);
 
+write(1,"hola", strlen("Hola"));
   while(1) {}
 }
