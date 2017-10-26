@@ -43,12 +43,52 @@ int sys_getpid()
 
 int sys_fork()
 {
-  int PID=-1;
+    int PID=-1;
 
-  // creates the child process
-  //TODO
-  
-  return PID;
+    // creates the child process
+    //TODO
+    struct list_head *node;
+    if (list_empty(&freequeue)) {
+        return ENOMEM;
+    }
+    t = list_first(&freequeue);
+    list_del(node);
+    
+    //Copiar del pare al fill
+//     struct list_head copia = *node;
+    struct task_struct * p = list_head_to_task_struct(node);
+    copy_data(current(), p, KERNEL_STACK_SIZE);
+    allocate_DIR(p);
+    page_table_entry * parent_PT =  get_PT (current());
+    page_table_entry * child_PT =  get_PT (p);
+    int i;
+    for (i = 0; i < TOTAL_PAGES; ++i) {
+        int frame_fill = alloc_frame();
+        if (frame_fill == -1) {
+            return ENOMEM;
+        }
+        
+        //modificar una entrada de la PT del fill
+        //(fer que apunti al frame que ens han donat)
+        child_PT[i].bits.pbase_addr = &phys_mem[frame_fill];
+        
+        //copiar el frame del pare al nou frame del fill
+        copy_data(parent_PT[i].bits.pbase_addr,
+                  child_PT[i].bits.pbase_addr,
+                  PAGE_SIZE);
+ 
+    }
+    p->list = copia;
+
+    //Pendent: modificar el pointer al directori X
+    //          modificar el pid
+    //          fer còpies de les págines del pare
+    
+    
+    return PID;
+    
+    
+    
 }
 
 void sys_exit()
@@ -58,9 +98,9 @@ void sys_exit()
 
 //Custom 2/10/2017
 int sys_write(int fd, char * buffer, int size) {
-    int escriptura = 1;
-    int lectura = 0;
-    int fd_status = check_fd(fd, escriptura);
+    //escriptura = 1;
+    //lectura = 0;
+    int fd_status = check_fd(fd, 1);
     if ( fd_status < 0) {
         return fd_status;
     }

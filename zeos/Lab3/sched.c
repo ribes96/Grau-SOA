@@ -71,7 +71,6 @@ struct list_head readyqueue;
 
 
 //Custom 25/10/2017
-//Consultar si és així (extern a sched.h)
 struct task_struct *idle_task;
 
 void init_idle (void)
@@ -119,8 +118,8 @@ void init_sched(){
         // quan accedeix al primer paràmetre//
         //////////////////////////////////////
         ///////////////////////////////////////
-        //TODO
-        list_add(task[i].task.list, &freequeue);
+        //MOD
+        list_add(&(task[i].task.list), &freequeue);
         
     }
     
@@ -173,7 +172,6 @@ void inner_task_switch(union task_union*t) {
         
         
         
-    /// Consultar si és correcte
     //////////////////////////////
         __asm__ __volatile__(
             "movl %%ebp, %0\n\t"

@@ -19,12 +19,12 @@ struct task_struct {
   page_table_entry * dir_pages_baseAddr;
   
   
-  
   unsigned long kernel_esp;
   
   //Custom 11/10/2017
-  //Consultar si és pointer o directament
-  struct list_head * list;
+  
+
+  struct list_head list;
 };
 
 union task_union {
@@ -35,6 +35,10 @@ union task_union {
 extern union task_union protected_tasks[NR_TASKS+2];
 extern union task_union *task; /* Vector de tasques */
 extern struct task_struct *idle_task;
+
+//Custom
+extern struct list_head freequeue;
+extern struct list_head readyqueue;
 
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]

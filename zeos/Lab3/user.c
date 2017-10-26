@@ -41,6 +41,5 @@ int __attribute__ ((__section__(".text.main")))
 //      acum = 0;
 //      acum = outer(count);
 
-write(1,"hola", strlen("Hola"));
   while(1) {}
 }
