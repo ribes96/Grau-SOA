@@ -81,7 +81,7 @@ void init_idle (void)
 //     struct task_struct * PCB = list_head_to_task_struct(node);
     idle_task = list_head_to_task_struct(node);
     idle_task->PID = 0;
-    
+    idle_task->quantum_ticks = MAX_PROCESS_TICKS;
     allocate_DIR(idle_task);
 }
 
@@ -93,7 +93,7 @@ void init_task1(void)
     
     struct task_struct * PCB = list_head_to_task_struct(node);
     PCB->PID = 1;
-    
+    PCB->quantum_ticks = MAX_PROCESS_TICKS;
     allocate_DIR(PCB);
     set_user_pages(PCB);
     union task_union *t = (union task_union * )PCB;
@@ -169,9 +169,7 @@ void inner_task_switch(union task_union*t) {
 //                 );
         
         
-        
-        
-        
+    
     //////////////////////////////
         __asm__ __volatile__(
             "movl %%ebp, %0\n\t"
@@ -187,6 +185,8 @@ void inner_task_switch(union task_union*t) {
             :"g" (t->task.kernel_esp)
                 );
         /////////////////////////////////
+        
+        
 }
 
 
@@ -218,4 +218,129 @@ struct task_struct* current()
   );
   return (struct task_struct*)(ret_value&0xfffff000);
 }
+
+////////////////////////
+// Process Scheduling
+// CUSTOM
+///////////////////////
+
+
+void update_sched_data_rr() {
+    ++process_ticks;
+}
+
+int needs_sched_rr() {
+    //Return True if need to change
+    if (process_ticks >= current()->quantum_ticks) {
+        //si la llista es buida, no hem de canviar
+        return !list_empty(&readyqueue);
+    }
+    return 0;
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
+    //if the new state is running, ==> then dest == null
+    //if dest != null, ==> then the new state is not running
+    int current_state = t->state;
+    
+    //consultar què és el nou estat
+    if (current_state != ST_RUN) {
+        list_del(&(t->list));
+    }
+    
+    //if new state is not running
+    if (dest != NULL) {
+        //tant si està a ready com blocked ha d'anar a readyqueue
+        list_add_tail(&(t->list), dest);
+        if (dest == &readyqueue) {
+            t->state = ST_READY;
+        }
+        else { //it doesn't go to ready, so it's not ready, so blocked
+            t->state = ST_BLOCKED;
+        }
+    }
+    else { //we continue executing this process, because the new state is running
+        t->state = ST_RUN;
+    }
+    
+    
+    //enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
+}
+
+
+//select the next process
+void sched_next_rr() {
+    process_ticks = 0;
+    if (list_empty(&readyqueue)) {
+        // No hi ha taskes a fer, executem idle
+        union task_union * u = (union task_union *)idle_task;
+        idle_task->state = ST_RUN;
+        task_switch(u);
+    }
+    else {
+        struct list_head *node = list_first(&readyqueue);
+        list_del(node);
+        struct task_struct * t = list_head_to_task_struct(node);
+        t->state = ST_RUN;
+        union task_union * u = (union task_union * )t;
+        task_switch(u);
+    }
+}
+
+void schedule() {
+    update_sched_data_rr();
+    if (needs_sched_rr()) {
+        update_process_state_rr(current(), &readyqueue);
+        sched_next_rr();
+    }
+}
+
+int get_quantum(struct task_struct * t) {
+    return t->quantum_ticks;
+}
+
+
+void set_quantum(struct task_struct * t, int new_quantum) {
+    t->quantum_ticks = new_quantum;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

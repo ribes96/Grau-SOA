@@ -107,3 +107,12 @@ int fork() {
     return retorno;
 }
 
+
+void exit() {
+    __asm__ __volatile__(
+        "INT $0x80;"
+        :
+        :"a" (1)
+       );
+}
+

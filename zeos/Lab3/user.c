@@ -41,5 +41,11 @@ int __attribute__ ((__section__(".text.main")))
 //      acum = 0;
 //      acum = outer(count);
 
+    int p = getpid();
+    char c[10];
+    itoa(p, c);
+    write(1,c,strlen(c));
+    exit();
+
   while(1) {}
 }

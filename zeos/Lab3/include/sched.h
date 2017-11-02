@@ -12,10 +12,13 @@
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
 
+
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
 struct task_struct {
   int PID;			/* Process ID. This MUST be the first field of the struct. */
+  int state;
+  int quantum_ticks;
   page_table_entry * dir_pages_baseAddr;
   
   
@@ -39,6 +42,13 @@ extern struct task_struct *idle_task;
 //Custom
 extern struct list_head freequeue;
 extern struct list_head readyqueue;
+
+//Custom 2/11/2017
+// Tick counter for process in CPU
+int process_ticks;
+
+//Consultar si 100 està bé
+#define MAX_PROCESS_TICKS 10;
 
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]

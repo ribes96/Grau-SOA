@@ -41,7 +41,86 @@ int sys_getpid()
 	return current()->PID;
 }
 
-int sys_fork()
+int sys_fork() {
+    int PID = -1;
+    //Search physical pages
+    int i;
+    int data_pos = NUM_PAG_KERNEL + NUM_PAG_CODE;
+    int free_pos = NUM_PAG_KERNEL + NUM_PAG_CODE + NUM_PAG_DATA;
+    int error = 0;
+    int pos_fail;
+    int frames[NUM_PAG_DATA];
+    for (i = 0; !error && i < NUM_PAG_DATA; ++i) {
+        int fframe = alloc_frame();
+        if (fframe == -1) {
+            error = 1;
+            pos_fail = i;
+        }
+        else {
+            frames[i] = fframe;
+        }
+    }
+    if (error) {
+        for (i = 0; i < pos_fail; ++i) {
+            free_frame(frames[i]);
+        }
+        //no és necessari alliberar el directori
+//         list_add(p, &freequeue);
+        return -ENOMEM;
+    }
+    
+        
+    
+    //Get a free task_struct
+    struct list_head *node;
+    if (list_empty(&freequeue)) {
+        return -ENOMEM;
+    }
+        //No hi ha error
+    //////////////////////////////////////
+    
+    t = list_first(&freequeue);
+    list_del(node);
+    
+    //Inherit system data
+    struct task_struct * p = list_head_to_task_struct(node);
+    copy_data(current(), p, KERNEL_STACK_SIZE);
+    
+    //Initialize field dir_pages_baseAddr
+    allocate_DIR(p);
+    
+
+    
+    //Kernel and code pages
+//     copy_data(current()->dir_pages_baseAddr, p->dir_pages_baseAddr, NUM_PAG_KERNEL + NUM_PAG_CODE);
+    copy_data(get_PT(current()), get_PT(p), data_pos);
+    
+    //Data Pages
+    for (i = 0; i < NUM_PAG_DATA; ++i) {
+        set_ss_pag(get_PT(current()), free_pos + i, frame[i]);
+        set_ss_pag(get_PT(p), data_pos + i, frame[i]);
+    }
+    copy_data(data_pos << 12,
+                free_pos << 12, 
+                NUM_PAG_DATA*PAGE_SIZE);
+    
+    
+    //Inherit user data
+    
+    //Assign a new PID
+    
+    //Initialize the fields of the task struct non common
+    
+    //h)
+    
+    //Insert to the readyqueue
+    
+    
+    //return pid
+    return PID;
+}
+
+int sys_fork2()
 {
     int PID=-1;
 
@@ -93,6 +172,15 @@ int sys_fork()
 
 void sys_exit()
 {  
+    struct task_struct * t = current();
+    page_table_entry * PT =  get_PT (current());
+    unsigned int i;
+    for (i = 0; i < TOTAL_PAGES; ++i) {
+        free_frame(get_frame(PT,i));
+        //No cal esborrar la taula de págines: està condemnat a morir
+    }
+    list_add(&(t->list), &freequeue);    
+    sched_next_rr();
 }
 
 
