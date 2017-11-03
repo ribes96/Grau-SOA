@@ -19,6 +19,7 @@
 #define ESCRIPTURA 1
 
 unsigned int zeos_ticks;
+int global_pid = 1000;
 
 #define KERNEL_BUFFER_SPACE 1024
 
@@ -39,6 +40,10 @@ int sys_ni_syscall()
 int sys_getpid()
 {
 	return current()->PID;
+}
+
+int ret_from_fork() {
+    return 0;
 }
 
 int sys_fork() {
@@ -79,12 +84,12 @@ int sys_fork() {
         //No hi ha error
     //////////////////////////////////////
     
-    t = list_first(&freequeue);
+    node = list_first(&freequeue);
     list_del(node);
     
     //Inherit system data
     struct task_struct * p = list_head_to_task_struct(node);
-    copy_data(current(), p, KERNEL_STACK_SIZE);
+    copy_data((void *)current(), (void *)p, KERNEL_STACK_SIZE);
     
     //Initialize field dir_pages_baseAddr
     allocate_DIR(p);
@@ -93,33 +98,67 @@ int sys_fork() {
     
     //Kernel and code pages
 //     copy_data(current()->dir_pages_baseAddr, p->dir_pages_baseAddr, NUM_PAG_KERNEL + NUM_PAG_CODE);
-    copy_data(get_PT(current()), get_PT(p), data_pos);
+    copy_data((void *)get_PT(current()), (void *)get_PT(p), data_pos);
     
-    //Data Pages
+    //Data Pages //Inherit user data
     for (i = 0; i < NUM_PAG_DATA; ++i) {
-        set_ss_pag(get_PT(current()), free_pos + i, frame[i]);
-        set_ss_pag(get_PT(p), data_pos + i, frame[i]);
+        set_ss_pag(get_PT(current()), free_pos + i, frames[i]);
+        set_ss_pag(get_PT(p), data_pos + i, frames[i]);
     }
-    copy_data(data_pos << 12,
-                free_pos << 12, 
+    copy_data((void *)(data_pos << 12),
+                (void *)(free_pos << 12), 
                 NUM_PAG_DATA*PAGE_SIZE);
     
+    for (i = 0; i < NUM_PAG_DATA; ++i) {
+        del_ss_pag(get_PT(current()), free_pos + i);
+    }
     
-    //Inherit user data
+            //Flush del TLB
+    set_cr3(current()->dir_pages_baseAddr);
+    
+    
     
     //Assign a new PID
+    p->PID = global_pid;
+    PID = global_pid;
+    ++global_pid;
     
     //Initialize the fields of the task struct non common
+    p->state = ST_READY;
     
+    
+    int * child_esp;
+    __asm__ __volatile__(
+        "movl %%esp, %0"
+        :"=g" (child_esp)
+    );
+    //El desfasament en el pare
+    child_esp = (int *)((int)child_esp - (int)current());
+    
+    child_esp = (int *)((int)child_esp + (int)p);
     //h)
+    __asm__ __volatile__(
+        "movl $ret_from_fork, (%0)\n\t"
+        "movl $0, -1(%0)\n\t"
+        :
+        :"g" (child_esp)
+            );
+    
+    //A causa dels dos pushl
+    --child_esp;
+    --child_esp;
+    
+    p->kernel_esp = (unsigned long)child_esp;
+    
     
     //Insert to the readyqueue
-    
+    list_add_tail(&(p->list), &readyqueue);
     
     //return pid
     return PID;
 }
 
+/*
 int sys_fork2()
 {
     int PID=-1;
@@ -169,6 +208,7 @@ int sys_fork2()
     
     
 }
+*/
 
 void sys_exit()
 {  

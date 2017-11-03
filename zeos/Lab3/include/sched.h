@@ -18,7 +18,7 @@ enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 struct task_struct {
   int PID;			/* Process ID. This MUST be the first field of the struct. */
   int state;
-  int quantum_ticks;
+  int quantum_ticks;    //Màxim temps permés a la CPU
   page_table_entry * dir_pages_baseAddr;
   
   

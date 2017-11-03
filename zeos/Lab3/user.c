@@ -45,7 +45,7 @@ int __attribute__ ((__section__(".text.main")))
     char c[10];
     itoa(p, c);
     write(1,c,strlen(c));
-    exit();
+//     exit();
 
   while(1) {}
 }
