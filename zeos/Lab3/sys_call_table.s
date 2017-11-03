@@ -1,8 +1,9 @@
 # 1 "sys_call_table.S"
 # 1 "<built-in>"
 # 1 "<command-line>"
+# 31 "<command-line>"
 # 1 "/usr/include/stdc-predef.h" 1 3 4
-# 1 "<command-line>" 2
+# 32 "<command-line>" 2
 # 1 "sys_call_table.S"
 # 1 "include/asm.h" 1
 # 2 "sys_call_table.S" 2
@@ -32,6 +33,22 @@
  .long sys_ni_syscall
  .long sys_ni_syscall
  .long sys_getpid
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_get_stats
+
 
 
     .globl MAX_SYSCALL

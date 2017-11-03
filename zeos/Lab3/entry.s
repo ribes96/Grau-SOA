@@ -1,8 +1,9 @@
 # 1 "entry.S"
 # 1 "<built-in>"
 # 1 "<command-line>"
+# 31 "<command-line>"
 # 1 "/usr/include/stdc-predef.h" 1 3 4
-# 1 "<command-line>" 2
+# 32 "<command-line>" 2
 # 1 "entry.S"
 
 
@@ -15,7 +16,13 @@
 # 86 "entry.S"
 .globl keyboard_handler; .type keyboard_handler, @function; .align 0; keyboard_handler:
     pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
+    pushl %eax
+    call user_to_system
+    popl %eax
     call keyboard_routine
+    pushl %eax
+    call system_to_user
+    popl %eax
     movb $0x20, %al ; outb %al, $0x20 ;
     popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs;
     iret
@@ -26,7 +33,13 @@
     jl err
     cmpl $MAX_SYSCALL, %eax
     jg err
+    pushl %eax
+    call user_to_system
+    popl %eax
     call *sys_call_table(,%eax,4)
+    pushl %eax
+    call system_to_user
+    popl %eax
     movb $0x20, %al ; outb %al, $0x20 ;
     jmp fin
 err:
@@ -42,7 +55,13 @@ fin:
 
 .globl clock_handler; .type clock_handler, @function; .align 0; clock_handler:
     pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
+    pushl %eax
+    call user_to_system
+    popl %eax
     call clock_routine
+    pushl %eax
+    call system_to_user
+    popl %eax
     movb $0x20, %al ; outb %al, $0x20 ;
     popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs;
     iret

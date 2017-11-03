@@ -2,7 +2,7 @@
  * libc.h - macros per fer els traps amb diferents arguments
  *          definició de les crides a sistema
  */
- 
+
 #ifndef __LIBC_H__
 #define __LIBC_H__
 
@@ -23,5 +23,6 @@ void exit();
 //CUSTOM 5/10/2017
 void perror();
 int gettime();
+int get_stats(int pid, struct stats * st);
 
 #endif  /* __LIBC_H__ */

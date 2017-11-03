@@ -29,25 +29,25 @@ extern struct list_head blocked;
 
 
 /* get_DIR - Returns the Page Directory address for task 't' */
-page_table_entry * get_DIR (struct task_struct *t) 
+page_table_entry * get_DIR (struct task_struct *t)
 {
 	return t->dir_pages_baseAddr;
 }
 
 /* get_PT - Returns the Page Table address for task 't' */
-page_table_entry * get_PT (struct task_struct *t) 
+page_table_entry * get_PT (struct task_struct *t)
 {
 	return (page_table_entry *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr))<<12);
 }
 
 
-int allocate_DIR(struct task_struct *t) 
+int allocate_DIR(struct task_struct *t)
 {
 	int pos;
 
 	pos = ((int)t-(int)task)/sizeof(union task_union);
 
-	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos]; 
+	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos];
 
 	return 1;
 }
@@ -77,7 +77,7 @@ void init_idle (void)
 {
     struct list_head * node = list_first(&freequeue);
     list_del(node);
-    
+
 //     struct task_struct * PCB = list_head_to_task_struct(node);
     idle_task = list_head_to_task_struct(node);
     idle_task->PID = 0;
@@ -90,7 +90,7 @@ void init_task1(void)
 {
     struct list_head * node = list_first(&freequeue);
     list_del(node);
-    
+
     struct task_struct * PCB = list_head_to_task_struct(node);
     PCB->PID = 1;
     PCB->quantum_ticks = MAX_PROCESS_TICKS;
@@ -120,9 +120,9 @@ void init_sched(){
         ///////////////////////////////////////
         //MOD
         list_add(&(task[i].task.list), &freequeue);
-        
+
     }
-    
+
     //////////////////////////////
 
     //Inicialització de readyqueue
@@ -130,46 +130,26 @@ void init_sched(){
 
     //////////////////////////////
 
-    
+
 //     for (i = 0; i < NR_TASKS; ++i) {
-//         
-//         
+//
+//
 //         //El tamany d'un element de freequeue
 //         int taman_task_union = sizeof(unsigned long)*KERNEL_STACK_SIZE;
-//         
+//
 //         //La dirección del següent
 //         list_add((struct task_struct * )(*p + taman_task_union), p);
 //         p = p->next;
 //     }
 
-    
+
 }
 
 //Feta per nosaltres
 void inner_task_switch(union task_union*t) {
     set_cr3(get_DIR(&(t->task)));
     tss.esp0 = (DWord) &(t->stack[KERNEL_STACK_SIZE]);
-    
-    //En dos troços per evitar errors
-//         __asm__ __volatile__(
-//             "movl %%ebp, %%eax"
-//             :"=a" (current()->kernel_esp)
-//             :
-//             :"eax"
-//                 );
-//     
-// 
-//         __asm__ __volatile__(
-//             "movl %%ebx, %%esp"
-//             "popl %%ebp"
-//             "ret"
-//             :
-//             :"b" (t->task.kernel_esp)
-//             :"ebx"
-//                 );
-        
-        
-    
+
     //////////////////////////////
         __asm__ __volatile__(
             "movl %%ebp, %0\n\t"
@@ -185,8 +165,8 @@ void inner_task_switch(union task_union*t) {
             :"g" (t->task.kernel_esp)
                 );
         /////////////////////////////////
-        
-        
+
+
 }
 
 
@@ -211,7 +191,7 @@ void task_switch(union task_union*t) {
 struct task_struct* current()
 {
   int ret_value;
-  
+
   __asm__ __volatile__(
   	"movl %%esp, %0"
 	: "=g" (ret_value)
@@ -242,12 +222,12 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
     //if the new state is running, ==> then dest == null
     //if dest != null, ==> then the new state is not running
     int current_state = t->state;
-    
+
     //consultar què és el nou estat
     if (current_state != ST_RUN) {
         list_del(&(t->list));
     }
-    
+
     //if new state is not running
     if (dest != NULL) {
         //tant si està a ready com blocked ha d'anar a readyqueue
@@ -262,8 +242,8 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
     else { //we continue executing this process, because the new state is running
         t->state = ST_RUN;
     }
-    
-    
+
+
     //enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 }
 
@@ -271,6 +251,10 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
 //select the next process
 void sched_next_rr() {
     process_ticks = 0;
+    //Per al procés que deixa la CPU
+    // c)
+    current()->statistics.system_ticks += get_ticks() - current()->statistics.elapsed_total_ticks;
+    current()->statistics.elapsed_total_ticks = get_ticks();
     if (list_empty(&readyqueue)) {
         // No hi ha taskes a fer, executem idle
         union task_union * u = (union task_union *)idle_task;
@@ -285,11 +269,18 @@ void sched_next_rr() {
         union task_union * u = (union task_union * )t;
         task_switch(u);
     }
+    //Per al procés que acaba d'entrar a la CPU
+    //d)
+    current()->statistics.ready_ticks += get_ticks() - current()->statistics.elapsed_total_ticks;
+    current()->statistics.elapsed_total_ticks = get_ticks();
+    
+    ++current()->statistics.total_trans;
 }
 
 void schedule() {
     update_sched_data_rr();
     if (needs_sched_rr()) {
+
         update_process_state_rr(current(), &readyqueue);
         sched_next_rr();
     }
@@ -303,44 +294,3 @@ int get_quantum(struct task_struct * t) {
 void set_quantum(struct task_struct * t, int new_quantum) {
     t->quantum_ticks = new_quantum;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

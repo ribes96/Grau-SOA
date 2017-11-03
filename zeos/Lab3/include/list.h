@@ -33,7 +33,7 @@ struct list_head {
  *   struct list_head * e = list_first( &list );
  *
  *   // Remove the selected element from the list
- *   list_del( e ); 
+ *   list_del( e );
  *
  *   // Get the container of this list element
  *   struct element * realelement = list_entry( e, struct element, anchor );
@@ -102,7 +102,7 @@ int list_empty(const struct list_head *head);
  */
 #define list_entry(ptr, type, member) \
             ((type *)((char *)(ptr)-(unsigned long)(&((type *)0)->member)))
-            
+
 
 /**
  * list_for_each	-	iterate over a list

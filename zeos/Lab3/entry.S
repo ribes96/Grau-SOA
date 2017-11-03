@@ -50,9 +50,9 @@
       movl $__KERNEL_DS, %edx;    \
       movl %edx, %ds;           \
       movl %edx, %es
-      
-      
-      
+
+
+
 #define RESTORE_ALL \
         popl %ebx;          \
         popl %ecx;          \
@@ -65,19 +65,19 @@
         popl %es;           \
         popl %fs;           \
         popl %gs;           \
-        
+
 #define EOI \
     movb $0x20, %al ; \
     outb %al, $0x20 ; \
-    
-    
+
+
 /**CUSTOM 29/9/2017 **/
 /** Suposem que la hem de declarar nosaltres **/
 #define ENOSYS 38
-    
-    
-    
-    
+
+
+
+
 /** HANDLERS
 /*****************************/
 /*****************************/
@@ -85,35 +85,52 @@
 
 ENTRY(keyboard_handler)
     SAVE_ALL
+    pushl %eax
+    call user_to_system
+    popl %eax
     call keyboard_routine
+    pushl %eax
+    call system_to_user
+    popl %eax
     EOI
     RESTORE_ALL
     iret
-    
+
 ENTRY(system_call_handler)
     SAVE_ALL        /** Save the current context **/
     cmpl $0,%eax    /** Is syscall negative?**/
     jl err
     cmpl $MAX_SYSCALL, %eax
     jg err
+    pushl %eax
+    call user_to_system
+    popl %eax
     call *sys_call_table(,%eax,4)
-    EOI       
+    pushl %eax
+    call system_to_user
+    popl %eax
+    EOI
     jmp fin
 err:
     movl $-ENOSYS, %eax
-fin:    
+fin:
     movl %eax, 0x18(%esp)
     RESTORE_ALL
     iret
-    
+
 
 /**
 CUSTOM 2/10/2017
 **/
 ENTRY(clock_handler)
     SAVE_ALL
+    pushl %eax
+    call user_to_system
+    popl %eax
     call clock_routine
+    pushl %eax
+    call system_to_user
+    popl %eax
     EOI
     RESTORE_ALL
     iret
-

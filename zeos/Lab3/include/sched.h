@@ -8,6 +8,7 @@
 #include <list.h>
 #include <types.h>
 #include <mm_address.h>
+#include <stats.h>
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
@@ -19,13 +20,14 @@ struct task_struct {
   int PID;			/* Process ID. This MUST be the first field of the struct. */
   int state;
   int quantum_ticks;    //Màxim temps permés a la CPU
+  struct stats statistics;
   page_table_entry * dir_pages_baseAddr;
-  
-  
+
+
   unsigned long kernel_esp;
-  
+
   //Custom 11/10/2017
-  
+
 
   struct list_head list;
 };
