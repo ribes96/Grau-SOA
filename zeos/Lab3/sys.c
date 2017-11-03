@@ -97,7 +97,6 @@ int sys_fork() {
 
 
     //Kernel and code pages
-//     copy_data(current()->dir_pages_baseAddr, p->dir_pages_baseAddr, NUM_PAG_KERNEL + NUM_PAG_CODE);
     copy_data((void *)get_PT(current()), (void *)get_PT(p), data_pos);
 
     //Data Pages //Inherit user data
@@ -168,57 +167,6 @@ int sys_fork() {
     return PID;
 }
 
-/*
-int sys_fork2()
-{
-    int PID=-1;
-
-    // creates the child process
-    //TODO
-    struct list_head *node;
-    if (list_empty(&freequeue)) {
-        return ENOMEM;
-    }
-    t = list_first(&freequeue);
-    list_del(node);
-
-    //Copiar del pare al fill
-//     struct list_head copia = *node;
-    struct task_struct * p = list_head_to_task_struct(node);
-    copy_data(current(), p, KERNEL_STACK_SIZE);
-    allocate_DIR(p);
-    page_table_entry * parent_PT =  get_PT (current());
-    page_table_entry * child_PT =  get_PT (p);
-    int i;
-    for (i = 0; i < TOTAL_PAGES; ++i) {
-        int frame_fill = alloc_frame();
-        if (frame_fill == -1) {
-            return ENOMEM;
-        }
-
-        //modificar una entrada de la PT del fill
-        //(fer que apunti al frame que ens han donat)
-        child_PT[i].bits.pbase_addr = &phys_mem[frame_fill];
-
-        //copiar el frame del pare al nou frame del fill
-        copy_data(parent_PT[i].bits.pbase_addr,
-                  child_PT[i].bits.pbase_addr,
-                  PAGE_SIZE);
-
-    }
-    p->list = copia;
-
-    //Pendent: modificar el pointer al directori X
-    //          modificar el pid
-    //          fer còpies de les págines del pare
-
-
-    return PID;
-
-
-
-}
-*/
 
 void sys_exit()
 {

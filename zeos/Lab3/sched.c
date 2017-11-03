@@ -111,16 +111,7 @@ void init_sched(){
     INIT_LIST_HEAD(&freequeue);
     int i;
     for (i = 0; i < NR_TASKS; ++i) {
-        /////////////////////////
-        ///////////////////////
-        //// Consulta //////////
-        // fa un page_fault_handler //
-        // quan accedeix al primer paràmetre//
-        //////////////////////////////////////
-        ///////////////////////////////////////
-        //MOD
         list_add(&(task[i].task.list), &freequeue);
-
     }
 
     //////////////////////////////
@@ -129,18 +120,6 @@ void init_sched(){
     INIT_LIST_HEAD(&readyqueue);
 
     //////////////////////////////
-
-
-//     for (i = 0; i < NR_TASKS; ++i) {
-//
-//
-//         //El tamany d'un element de freequeue
-//         int taman_task_union = sizeof(unsigned long)*KERNEL_STACK_SIZE;
-//
-//         //La dirección del següent
-//         list_add((struct task_struct * )(*p + taman_task_union), p);
-//         p = p->next;
-//     }
 
 
 }
@@ -273,7 +252,7 @@ void sched_next_rr() {
     //d)
     current()->statistics.ready_ticks += get_ticks() - current()->statistics.elapsed_total_ticks;
     current()->statistics.elapsed_total_ticks = get_ticks();
-    
+
     ++current()->statistics.total_trans;
 }
 
