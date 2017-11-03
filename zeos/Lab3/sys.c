@@ -46,6 +46,10 @@ int ret_from_fork() {
     return 0;
 }
 
+
+//Por algún motivo que desconocemos, produce un page_fault
+//Para testear el resto, comentar este sys_fork() y descomentar
+// el siguiente, que es casi el hecho por Álex
 int sys_fork() {
     int PID = -1;
     //Search physical pages
@@ -126,28 +130,18 @@ int sys_fork() {
     p->state = ST_READY;
 
 
-    int * child_esp;
-    __asm__ __volatile__(
-        "movl %%esp, %0"
-        :"=g" (child_esp)
-    );
-    //El desfasament en el pare
-    child_esp = (int *)((int)child_esp - (int)current());
-
-    child_esp = (int *)((int)child_esp + (int)p);
-    //h)
-    __asm__ __volatile__(
-        "movl $ret_from_fork, (%0)\n\t"
-        "movl $0, -1(%0)\n\t"
-        :
-        :"g" (child_esp)
-            );
-
-    //A causa dels dos pushl
-    --child_esp;
-    --child_esp;
-
-    p->kernel_esp = (unsigned long)child_esp;
+  int child_esp;	
+  __asm__ __volatile__ (
+    "movl %%esp, %0\n\t"
+      :"=g" (child_esp)
+      );
+    child_esp = (int)child_esp - (int)current();
+    child_esp = (int)child_esp + (int)p;
+  
+  //Preparar la pila del fill
+  *(DWord*)(p->kernel_esp)=(DWord)&ret_from_fork;
+  p->kernel_esp-=sizeof(DWord);
+  *(DWord*)(p->kernel_esp)=0;
 
     p->statistics.user_ticks = 0;
     p->statistics.system_ticks = 0;
@@ -166,6 +160,96 @@ int sys_fork() {
     //return pid
     return PID;
 }
+  
+  ////////////////////////////////////////////
+  //Esto es casi exactamente la respuesta de Álex
+  //Funciona perfectamente
+  ////////////////////////////////////////////
+  /*
+  int sys_fork(void)
+{
+  struct list_head *lhcurrent = NULL;
+  union task_union *uchild;
+  
+  if (list_empty(&freequeue)) return -ENOMEM;
+
+  lhcurrent=list_first(&freequeue);
+  
+  list_del(lhcurrent);
+  
+  uchild=(union task_union*)list_head_to_task_struct(lhcurrent);
+  
+  copy_data(current(), uchild, sizeof(union task_union));
+  
+  allocate_DIR((struct task_struct*)uchild);
+  
+  int new_ph_pag, pag, i;
+  page_table_entry *process_PT = get_PT(&uchild->task);
+  for (pag=0; pag<NUM_PAG_DATA; pag++)
+  {
+    new_ph_pag=alloc_frame();
+    if (new_ph_pag!=-1) 
+    {
+      set_ss_pag(process_PT, PAG_LOG_INIT_DATA+pag, new_ph_pag);
+    }
+    else 
+    {
+      for (i=0; i<pag; i++)
+      {
+        free_frame(get_frame(process_PT, PAG_LOG_INIT_DATA+i));
+        del_ss_pag(process_PT, PAG_LOG_INIT_DATA+i);
+      }
+      list_add_tail(lhcurrent, &freequeue);
+      
+      return -EAGAIN; 
+    }
+  }
+
+  page_table_entry *parent_PT = get_PT(current());
+  for (pag=0; pag<NUM_PAG_KERNEL; pag++)
+  {
+    set_ss_pag(process_PT, pag, get_frame(parent_PT, pag));
+  }
+  for (pag=0; pag<NUM_PAG_CODE; pag++)
+  {
+    set_ss_pag(process_PT, PAG_LOG_INIT_CODE+pag, get_frame(parent_PT, PAG_LOG_INIT_CODE+pag));
+  }
+  for (pag=NUM_PAG_KERNEL+NUM_PAG_CODE; pag<NUM_PAG_KERNEL+NUM_PAG_CODE+NUM_PAG_DATA; pag++)
+  {
+    set_ss_pag(parent_PT, pag+NUM_PAG_DATA, get_frame(process_PT, pag));
+    copy_data((void*)(pag<<12), (void*)((pag+NUM_PAG_DATA)<<12), PAGE_SIZE);
+    del_ss_pag(parent_PT, pag+NUM_PAG_DATA);
+  }
+  set_cr3(get_DIR(current()));
+  
+  uchild->task.PID=++global_pid;
+  uchild->task.state=ST_READY;
+  
+  int register_ebp;		
+  __asm__ __volatile__ (
+    "movl %%ebp, %0\n\t"
+      : "=g" (register_ebp)
+      : );
+  register_ebp=(register_ebp - (int)current()) + (int)(uchild);
+
+  uchild->task.kernel_esp=register_ebp + sizeof(DWord);
+  
+  DWord temp_ebp=*(DWord*)register_ebp;
+  uchild->task.kernel_esp-=sizeof(DWord);
+  *(DWord*)(uchild->task.kernel_esp)=(DWord)&ret_from_fork;
+  uchild->task.kernel_esp-=sizeof(DWord);
+  *(DWord*)(uchild->task.kernel_esp)=temp_ebp;
+
+//   init_stats(&(uchild->task.statistics));
+
+
+  uchild->task.state=ST_READY;
+  list_add_tail(&(uchild->task.list), &readyqueue);
+  
+
+  return uchild->task.PID;
+}
+*/
 
 
 void sys_exit()

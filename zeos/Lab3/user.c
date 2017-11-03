@@ -41,6 +41,7 @@ int __attribute__ ((__section__(".text.main")))
 //      acum = 0;
 //      acum = outer(count);
 
+fork();
     int p = getpid();
     char c[10];
     itoa(p, c);
