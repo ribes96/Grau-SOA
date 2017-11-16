@@ -11,6 +11,7 @@
 #include <mm.h>
 #include <io.h>
 #include <utils.h>
+#include <schedperf.h>
 //#include <zeos_mm.h> /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
 
 
@@ -71,6 +72,7 @@ int __attribute__((__section__(".text.main")))
   set_seg_regs(__KERNEL_DS, __KERNEL_DS, (DWord) &protected_tasks[5]);
 
   /*** DO *NOT* ADD ANY CODE IN THIS ROUTINE BEFORE THIS POINT ***/
+  
 
   printk("Kernel Loaded!    ");
 
@@ -100,6 +102,9 @@ int __attribute__((__section__(".text.main")))
 
 
   printk("Entering user mode...");
+  
+    //Custom 16/11/2017
+  zeos_console_init();
 
   enable_int();
   /*

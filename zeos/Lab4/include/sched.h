@@ -76,4 +76,42 @@ void update_sched_data_rr();
 
 void init_stats(struct stats *s);
 
+
+
+
+
+
+//Custom 16/11/2017
+struct stats * get_task_stats(struct task_struct *t);
+struct list_head *get_task_list(struct task_struct *t);
+
+void block_process(struct list_head *block_queue);
+void unblock_process(struct task_struct *blocked);
+
 #endif  /* __SCHED_H__ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

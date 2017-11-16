@@ -10,6 +10,7 @@
 #include <sched.h>
 
 #include <zeos_interrupt.h>
+#include <schedperf.h>
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
@@ -35,6 +36,9 @@ int zeos_ticks = 0;
 
 void clock_routine()
 {
+    //Custom 16/11/2017
+    zeos_update_read_console_emul();
+    
   zeos_show_clock();
   zeos_ticks ++;
   

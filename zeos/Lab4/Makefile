@@ -28,10 +28,13 @@ LINKFLAGS = -g
 
 SYSOBJ = interrupt.o entry.o sys_call_table.o io.o sched.o sys.o mm.o devices.o utils.o hardware.o list.o p_stats.o
 
-LIBZEOS = -L . -l zeos -l auxjp
+LIBZEOS = -L . -l zeos -l auxjp -l schedperf
 
 #add to USROBJ the object files required to complete the user program
-USROBJ = libc.o # libjp.a
+USROBJ =  libc.o   # libjp.a
+
+
+LIBUSER = -L. -l user
 
 all:zeos.bin
 
@@ -83,7 +86,7 @@ system: system.o system.lds $(SYSOBJ)
 	$(LD) $(LINKFLAGS) $(SYSLDFLAGS) -o $@ $< $(SYSOBJ) $(LIBZEOS) 
 
 user: user.o user.lds $(USROBJ) 
-	$(LD) $(LINKFLAGS) $(USRLDFLAGS) -o $@ $< $(USROBJ)
+	$(LD) $(LINKFLAGS) $(USRLDFLAGS) -o $@ $< $(USROBJ) $(LIBUSER)
 
 
 clean:
