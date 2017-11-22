@@ -149,13 +149,6 @@ void sched_next_rr(void)
 
 void schedule()
 {
-    //Decrementa el quantum
-//   update_sched_data_rr();
-//   if (needs_sched_rr())
-//   {
-//     update_process_state_rr(current(), &readyqueue);
-//     sched_next_rr();
-//   }
     
     
     //Les funcions generals, per totes les polítiques
@@ -312,9 +305,15 @@ void task_switch(union task_union *new)
 /* Force a task switch assuming that the scheduler does not work with priorities */
 void force_task_switch()
 {
-  update_process_state_rr(current(), &readyqueue);
-
-  sched_next_rr();
+    
+    //consultar si realment és necessari canviar de _rr al genéric
+    
+//   update_process_state_rr(current(), &readyqueue);
+//   sched_next_rr();
+    
+    //custom
+    update_process_state(current(), &readyqueue);
+    sched_next();
 }
 
 ///////////////////////////////////////

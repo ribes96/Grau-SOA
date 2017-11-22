@@ -20,6 +20,8 @@
 #define LECTURA 0
 #define ESCRIPTURA 1
 
+int sched_next();
+
 int check_fd(int fd, int permissions)
 {
   if (fd!=1) return -EBADF; 
@@ -207,7 +209,13 @@ void sys_exit()
   current()->PID=-1;
   
   /* Restarts execution of the next process */
-  sched_next_rr();
+  
+  //consultar si s'ha de canviar al genéric o mantenir aquest
+  
+//   sched_next_rr();
+  
+  //custom
+  sched_next();
 }
 
 /* System call to force a task switch */
