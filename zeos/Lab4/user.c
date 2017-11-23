@@ -14,7 +14,7 @@ int feinaCPU(int n) {
     for (i = 0; i <= n; ++i) {
         j = 0;
         int cont2 = 0;
-        for (j = 0; j <= n; ++j) {
+        for (j = 0; j <= i; ++j) {
             cont2 += j;
         }
         cont += cont2;
@@ -27,18 +27,8 @@ int feinaIO(int n) {
 }
 
 
-// struct stats
-// {
-//   unsigned long user_ticks;
-//   unsigned long system_ticks;
-//   unsigned long blocked_ticks;
-//   unsigned long ready_ticks;
-//   unsigned long elapsed_total_ticks;
-//   unsigned long total_trans; /* Number of times the process has got the CPU: READY->RUN transitions */
-//   unsigned long remaining_ticks;
-// };
-
-void write_stats(struct stats * t) {
+//Escriu les estadístiques en 5 línies
+void write_stats_big(struct stats * t) {
     char user_ticksC[10];
     char system_ticksC[10];
     char blocked_ticksC[10];
@@ -79,6 +69,50 @@ void write_stats(struct stats * t) {
     
 }
 
+
+//Escriu les estadístiques en una sola linia
+void write_stats(struct stats * t) {
+    char user_ticksC[10];
+    char system_ticksC[10];
+    char blocked_ticksC[10];
+    char ready_ticksC[10];
+    char total_ticksC[10];
+    
+    itoa(t->user_ticks, user_ticksC);
+    itoa(t->system_ticks, system_ticksC);
+    itoa(t->blocked_ticks, blocked_ticksC);
+    itoa(t->ready_ticks, ready_ticksC);
+    itoa(t->user_ticks + 
+         t->system_ticks + 
+         t->blocked_ticks + 
+         t->ready_ticks, 
+         
+         total_ticksC);
+    
+    char * desc_user = "   User: ";
+    char * desc_system = "   Sys: ";
+    char * desc_blocked = "   Block: ";
+    char * desc_ready = "   Ready: ";
+    char * desc_total = "   Total: ";
+    
+    write(1, desc_user, strlen(desc_user));
+    write(1, user_ticksC, strlen(user_ticksC));
+    
+    write(1, desc_system, strlen(desc_system));
+    write(1, system_ticksC, strlen(system_ticksC));
+    
+    write(1, desc_blocked, strlen(desc_blocked));
+    write(1, blocked_ticksC, strlen(blocked_ticksC));
+    
+    write(1, desc_ready, strlen(desc_ready));
+    write(1, ready_ticksC, strlen(ready_ticksC));
+    
+    write(1, desc_total, strlen(desc_total));
+    write(1, total_ticksC, strlen(total_ticksC));
+    
+}
+
+//Escriu per pantalla n
 void custom_write_int(int n) {
     char nC[10];
     itoa(n, nC);
@@ -87,38 +121,186 @@ void custom_write_int(int n) {
 
 int burstCPU() {
     
-    //consultar amb 45000 és un instant, amb 48000 és bucle (casi) infinit
-    int n = 48000;
+    int n = 3000;
     
-    int a = feinaCPU(n);
-    custom_write_int(a);
-    struct stats t;
-    get_stats(getpid(), &t);
     
-    write_stats(&t);
+     int pid1, pid2, pid3;
+     pid1 = fork();
+     if (!pid1) {
+         //codi del fill1
+         int a = feinaCPU(n);
+         char * st = "Aquest el el P1\n";
+         
+        write(1,st, strlen(st));
+        custom_write_int(a);
+        struct stats t;
+        get_stats(getpid(), &t);
+        write_stats(&t);
+        exit();
+     }
+     else {
+        pid2 = fork();
+        if (!pid2) {
+            //codi del fill1
+            int a = feinaCPU(n);
+            char * st = "\nAquest el el P2\n";
+            
+            write(1,st, strlen(st));
+            custom_write_int(a);
+            struct stats t;
+            get_stats(getpid(), &t);
+            write_stats(&t);
+            exit();
+        }
+        else {
+        pid3 = fork();
+            if (!pid3) {
+                //codi del fill1
+                int a = feinaCPU(n);
+                char * st = "\nAquest el el P3\n";
+                
+                write(1,st, strlen(st));
+                custom_write_int(a);
+                struct stats t;
+                get_stats(getpid(), &t);
+                write_stats(&t);
+                exit();
+            }
+            else {
+                //Només el pare
+                read(0,0,10);
+            }
+
+        }
+     }
+
+     
     return 0;
 }
 
 int burstIO() {
-    int n = 1000;
-    feinaIO(n);
-    struct stats t;
-    get_stats(getpid(), &t);
     
-    write_stats(&t);
+    int n = 50;
+    
+    
+     int pid1, pid2, pid3;
+     pid1 = fork();
+     if (!pid1) {
+         //codi del fill1
+         int a = feinaIO(n);
+         char * st = "Aquest el el P1\n";
+         
+        write(1,st, strlen(st));
+        custom_write_int(a);
+        struct stats t;
+        get_stats(getpid(), &t);
+        write_stats(&t);
+        exit();
+     }
+     else {
+        pid2 = fork();
+        if (!pid2) {
+            //codi del fill2
+            int a = feinaIO(n);
+            char * st = "\nAquest el el P2\n";
+            
+            write(1,st, strlen(st));
+            custom_write_int(a);
+            struct stats t;
+            get_stats(getpid(), &t);
+            write_stats(&t);
+            exit();
+        }
+        else {
+        pid3 = fork();
+            if (!pid3) {
+                //codi del fill3
+                int a = feinaIO(n);
+                char * st = "\nAquest el el P3\n";
+                
+                write(1,st, strlen(st));
+                custom_write_int(a);
+                struct stats t;
+                get_stats(getpid(), &t);
+                write_stats(&t);
+                exit();
+            }
+            else {
+            //Només ho fa el pare
+            read(0,0,500);
+            read(0,0,500);
+//          read(0,0,10);
+            
+            }
+        }
+     }
+     
     return 0;
 }
 
 int burstMix() {
-    int n = 500;
-    feinaCPU(n);
-    feinaIO(n);
-    struct stats t;
-    get_stats(getpid(), &t);
     
-    write_stats(&t);
+    int n = 1000;
+    
+    
+     int pid1, pid2, pid3;
+     pid1 = fork();
+     if (!pid1) {
+         //codi del fill1
+         int a = feinaCPU(n);
+         char * st = "Aquest el el P1\n";
+         
+        write(1,st, strlen(st));
+        custom_write_int(a);
+        struct stats t;
+        get_stats(getpid(), &t);
+        write_stats(&t);
+        exit();
+     }
+     else {
+        pid2 = fork();
+        if (!pid2) {
+            //codi del fill2
+            int a = feinaIO(n);
+            char * st = "\nAquest el el P2\n";
+            
+            write(1,st, strlen(st));
+            custom_write_int(a);
+            struct stats t;
+            get_stats(getpid(), &t);
+            write_stats(&t);
+            exit();
+        }
+        else {
+        pid3 = fork();
+            if (!pid3) {
+                //codi del fill3
+                int a = feinaCPU(n/2);
+                int b = feinaIO(n/2);
+                char * st = "\nAquest el el P3\n";
+                
+                write(1,st, strlen(st));
+                custom_write_int(a);
+                struct stats t;
+                get_stats(getpid(), &t);
+                write_stats(&t);
+                exit();
+            }
+            else {
+                //Només el pare
+                read(0,0,10);
+                read(0,0,10);
+                read(0,0,10);
+            }
+
+        }
+     }
+
+     
     return 0;
 }
+
+
 
 
 
@@ -131,20 +313,18 @@ int __attribute__ ((__section__(".text.main")))
      
      //0: Round Robin
      //1: FIFO
-    set_sched_policy(0);
-     char * ss = "\nTot va be\n";
-     write(1,ss,strlen(ss));
-
-     
-     
-     burstCPU();
+    set_sched_policy(1);
+    
+    
+    
+//      burstCPU();
 //      burstIO();
+     burstMix();
+     char * st = "\nEl process idle:\n";
+     write(1,st, strlen(st));
+     struct stats t;
+     get_stats(0, &t);
+     write_stats(&t);
      
-     /* TODO
-      * - Que les dades estadístiques estiguin bé
-      * - Veure com ho fem en diferents processos
-      * - Posar les estadístiques a la taula
-      * - Descripció dels workloads
-      */
   while(1) { }
 }

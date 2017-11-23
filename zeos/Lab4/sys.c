@@ -212,10 +212,10 @@ void sys_exit()
   
   //consultar si s'ha de canviar al genéric o mantenir aquest
   
-//   sched_next_rr();
+  sched_next_rr();
   
   //custom
-  sched_next();
+//   sched_next();
 }
 
 /* System call to force a task switch */
