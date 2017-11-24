@@ -1,0 +1,159 @@
+Albert Vallès
+Albert Ribes
+
+Descripción de los workloads:
+=============================
+
+  Hemos definido 3 workloads distintos: burstCPU, burstIO, burstMix.
+  Los 3 utilizan las funciones "feinaCPU(n)" y "feinaIO(n)", que hacen
+  un trabajo proporcional a n que tiene que ver con trabajo de CPU o de
+  Entrada/Salida, respectivamente.
+
+  En particular:
+
+    - feinaCPU(n): Mediante 2 bucles hace n*(n+1)/2 iteraciones para calcular algún
+    tipo de suma
+    - feinaIO(n): Hace una llamada a read(0,0,n), para que esté parado n ticks de
+    reloj.
+
+
+  Lo que hace cada uno de los workloads es:
+
+  burstCPU:
+  --------
+
+    El proceso principal crea 3 procesos hijos y cada uno de los hijos ejecuta
+    feinaCPU(3000), escribe sus estadísticas y llama a exit() para terminar.
+
+    Para evitar el starvation cuando se ejecute una política FCFS el proceso principal
+    hace una llamada a read(0,0,10) después de haber creado los procesos para que
+    se bloquee y permita a los hijos ejecutarse.
+
+  burstIO:
+  --------
+
+    El proceso principal crea 3 procesos hijos y cada uno de los hijos ejecuta
+    feinaIO(50), escribe sus estadisticas y llama a exit() para terminar.
+
+    En este caso para evitar el starvation con FCFS son necesarios dos bloqueos del
+    proceso principal, puesto que los hijos se van a bloquear nada más empezar su
+    ejecución. Para ello el principal hace dos llamadas a read(0,0,500)
+
+  burstMix:
+  ---------
+
+    El proceso principal crea 3 procesos hijos:
+    - El hijo1 ejecuta feinaCPU(1000), escribe sus estadísticas y llama a exit()
+    - El hijo2 ejecuta feinaIO(1000), escribe sus estadísticas y llama a exit()
+    - El hijo3 ejecuta feinaCPU(500), feinaIO(500), escribe su estadísticas
+    y llama a exit()
+
+
+    Después de crear a los 3 procesos hijos el principal ejecuta tres veces
+    read(0,0,10) por lo que pudiera ocurrir.
+
+
+
+Discusión de los resultados:
+============================
+
+  burstCPU:
+  ---------
+    Round Robin:
+    ~~~~~~~~~~~~
+      - Es lógico que no haya ningún tiempo de blocked, puesto que ningún proceso
+      ha hecho Entrada/Salida, y ahora mismo es lo único que podría bloquearlos
+      - También es lógico que el tiempo de usuario sea más o menos el mismo en
+      todos puesto que han hecho el mismo trabajo de usuario
+      - Es lógico que no haya tiempo de sistema puesto que no han realizado
+      ninguna llamada a sistema
+      - El tiempo que han pasado los procesos en la cola de ready es similar.
+      Esto se debe que a el trabajo ha requerido varios quantums para realizarse
+      y todos se han ido turnando para hacerlo, esperando más o menos de forma
+      equitativa. Si el trabajo fuera más corto y se pudiera realizar en un
+      solo quantum entonces el primer proceso apenas estaría en la cola de
+      ready, el segundo un poco más y el tercero más todavía.
+
+    FCFS:
+    ~~~~~
+      - Igual que en el apartado anterior, es lógico que no haya tiempo de
+      blocked
+      - Lo mismo con el tiempo de usuario y el de sistema
+      - Respecto al tiempo en la cola de ready, ahora el primer proceso ha
+      entrado en la CPU y no ha salido hasta que ha terminado su trabajo. Como
+      era el primero apenas ha estado en la cola de ready. El segundo proceso ha
+      tenido que esperar hasta que el primera hubiera terminado, y por eso ha
+      estado más en la cola de ready. El tercero es el que más ha esperado, y
+      por tanto el que más ha estado en la cola de ready.
+
+  burstIO:
+  --------
+    Round Robin:
+    ~~~~~~~~~~~~
+      - Puesto que no ha habido trabajo de usuario, todos los procesos tienen
+      el tiempo de usuario a 0.
+      - Apenas tienen tiempo en la cola de ready, puesto que no han necesitado
+      ejecutar código de usuario. El poco que tienen debe deberse  a los tiempos
+      marginales antes y después de la operación de Entrada/Salida
+      - El tiempo de bloqueo entre los 3 procesos es similar. Esto es lógico
+      puesto que todos han realizado el mismo trabajo de Entrada/Salida. Las
+      pequeñas diferencias que se observan pueden deberse a que el dispositivo
+      no puede atender todas las peticiones al mismo tiempo, y el tiempo que
+      el proceso está esperando para que le "atienda" el dispositivo también se
+      considera tiempo de bloqueo. Por ello el proceso 2 espera un poco más que
+      el 1 y el proceso 3 espera un poco más que el 2.
+      - TODO el tiempo de sistema comentar que read() no gasta este tiempo
+
+    FCFS:
+    ~~~~~
+      - Todos los datos son muy similares al apartado anterior. Esto se debe a
+      a pesar de que cada proceso podría disponer de la CPU todo el tiempo que
+      quisiera, ninguno de ellos la necesita, puesto que su trabajo es de
+      Entrada/Salida. Por eso se bloquean exactamente igual que en el apartado
+      anterior y las estadísticas son las mismas.
+
+  burstMix:
+  ---------
+    Round Robin:
+    ~~~~~~~~~~~~
+      - El proceso 1 no tiene tiempo de blocked, puesto que no ha realizado
+      ninguna Entrada/Salida. El 2 en cambio sí que ha realizado, y por eso
+      tiene un tiempo de blocked más alto. Es interesante el comportamiento
+      del proceso 3: a pesar de que tenía menos trabajo de Entrada/Salida que
+      el proceso 2, ha pasado más tiempo bloqueado. Esto se debe a que en el
+      tiempo que se estaba haciendo la E/S del proceso 2, el 3 también había
+      pedido una E/S en el mismo dispositivo. Entonces tiene que esperar hasta
+      que el proceso 2 haya terminado, y después que se realice su E/S, y todo
+      ese tiempo se considera de bloqueo. El tiempo de bloqueo del proceso 3 es
+      más o menos 3/2 del tiempo del proceso 2, y esto es lógico puesto que
+      el 3 hace la mitad de trabajo que el 2 ==> 1 + 1/2 = 3/2. Si el proceso 3
+      realizara primero el trabajo de CPU y después el trabajo de E/S los números
+      serían distintos, puesto que mientras se está haciendo el trabajo de CPU
+      se estaría realizando la E/S del proceso 2, y no se contaría ese tiempo
+      como bloqueo del proceso 3.
+      - Respecto al tiempo de usuario, es lógico que el proceso 2 no tenga,
+      puesto que no ha hecho trabajo de CPU. El proceso 1 y el 3 sí que han
+      hecho, pero distintas cantidades: el 3 ha hecho la mitad que el 1. Puesto
+      que feinaCPU(n) tiene un tiempo cuadrático respecto a n, hacer la mitad
+      del trabajo supone 1/4 del tiempo que supone hacerlo todo. Esto es acorde
+      con los datos que se observan: El tiempo de usuario del proceso 1 es 18,
+      y el del proceso 3 es 4; más o menos una cuarta parte.
+      - Respecto al tiempo de ready, los números son interesantes. Da la
+      impresión que ahora hacer el trabajo de CPU requería solo uno o dos
+      quantums. Por eso el primer proceso apenas ha estado en la cola de ready,
+      pues ha hecho
+      todo su trabajo en el primer quantum. Los otros procesos han tenido
+      que esperar hasta que terminara ese cuantum, que parece haber durado
+      unos 20 ticks. A pesar de que el proceso 2 apenas tenía trabajo de CPU,
+      quizá a tenido que esperar a que terminara el quantum para hacer algo
+      de código marginal antes de pasar a la entrada salida. Pero cuando le
+      ha llegado el turno apenas lo ha gastado para hacer pocas cosas y después
+      se ha bloqueado, dejando paso al proceso 3 rápidamente. Eso explica que
+      el tiempo en la cola de ready del proceso 2 y del 3 sea tan similar.
+      - TODO el tiempo de sistema. Comentar que read() no gasta ese tiempo
+
+    FCFS:
+    ~~~~~
+      - El tiempo de bloqueo es similar al apartado anterior, y los motivos
+      son los mismos
+      - TODO lo que queda
