@@ -102,7 +102,9 @@ Discusión de los resultados:
       el proceso está esperando para que le "atienda" el dispositivo también se
       considera tiempo de bloqueo. Por ello el proceso 2 espera un poco más que
       el 1 y el proceso 3 espera un poco más que el 2.
-      - TODO el tiempo de sistema comentar que read() no gasta este tiempo
+      - Respecto al tiempo de sistema, mirar la nota en la línea 171. Los
+      procesos que llaman a read(), (en este caso todos) deberían mostrar
+      algo de tiempo de sistema, pero no lo muestran.
 
     FCFS:
     ~~~~~
@@ -126,11 +128,11 @@ Discusión de los resultados:
       que el proceso 2 haya terminado, y después que se realice su E/S, y todo
       ese tiempo se considera de bloqueo. El tiempo de bloqueo del proceso 3 es
       más o menos 3/2 del tiempo del proceso 2, y esto es lógico puesto que
-      el 3 hace la mitad de trabajo que el 2 ==> 1 + 1/2 = 3/2. Si el proceso 3
-      realizara primero el trabajo de CPU y después el trabajo de E/S los números
-      serían distintos, puesto que mientras se está haciendo el trabajo de CPU
-      se estaría realizando la E/S del proceso 2, y no se contaría ese tiempo
-      como bloqueo del proceso 3.
+      el 3 hace la mitad de trabajo que el 2 ==> 1 + 1/2 = 3/2. Parece que el
+      hecho de hacer primero el trabajo de CPU no ha afectado demasiado. Esto
+      puede deberse a que el tiempo del trabajo de CPU ahora es demasiado corto,
+      se hace en solo un quantum y luego tiene que esperar casi lo mismo que si
+      no hubiera realizado el trabajo de CPU
       - Respecto al tiempo de usuario, es lógico que el proceso 2 no tenga,
       puesto que no ha hecho trabajo de CPU. El proceso 1 y el 3 sí que han
       hecho, pero distintas cantidades: el 3 ha hecho la mitad que el 1. Puesto
@@ -145,15 +147,53 @@ Discusión de los resultados:
       todo su trabajo en el primer quantum. Los otros procesos han tenido
       que esperar hasta que terminara ese cuantum, que parece haber durado
       unos 20 ticks. A pesar de que el proceso 2 apenas tenía trabajo de CPU,
-      quizá a tenido que esperar a que terminara el quantum para hacer algo
-      de código marginal antes de pasar a la entrada salida. Pero cuando le
+      quizá ha tenido que esperar a que terminara el quantum para hacer algo
+      de código marginal antes de pasar a la Entrada/Salida. Pero cuando le
       ha llegado el turno apenas lo ha gastado para hacer pocas cosas y después
       se ha bloqueado, dejando paso al proceso 3 rápidamente. Eso explica que
       el tiempo en la cola de ready del proceso 2 y del 3 sea tan similar.
-      - TODO el tiempo de sistema. Comentar que read() no gasta ese tiempo
+      - Respecto al tiempo de sistema, mirar la nota en la línea 171. Los
+      procesos que llaman a read(), (en este caso el 2 y 3) deberían mostrar
+      algo de tiempo de sistema, pero no lo muestran.
 
     FCFS:
     ~~~~~
       - El tiempo de bloqueo es similar al apartado anterior, y los motivos
       son los mismos
-      - TODO lo que queda
+      - El tiempo de usuario también es el mismo que en el apartado anterior,
+      puesto que el trabajo es el mismo.
+      - Los tiempos en la cola de ready son similares al apartado anterior, pero
+      podría no haber sido así. El motivo de la similitud es que ahora los
+      trabajos de CPU son más cortos, y se pueden realizar en un solo quantum, o
+      muy poco más. Esto hace que se note muy poco la diferencia entre Round Robin
+      y FCFS, pues en RR les da tiempo de terminar prácticamente el trabajo, y
+      en FCFS se quedan en la CPU hasta que lo terminan. Debido a esto los tiempos
+      son similares en RR y en FCFS.
+
+
+    Sobre el proceso idle:
+    ----------------------
+    - El proceso idle nunca tendrá tiempo de blocked, puesto que no hace E/S
+    - Tampoco debería tener nunca tiempo de ready, puesto que nunca pasa por la
+    cola de ready. Sin embargo esto no ocurre: en algunos casos este tiempo no
+    es nulo
+    - Idle gasta tiempo de usuario cuando no hay ningún otro proceso que quiera
+    usar la CPU. En las ejecuciones sin E/S el tiempo de usuario de idle es 0,
+    puesto que ningún proceso se bloquea. En las ejecuciones de burstIO el
+    tiempo de usuario de idle es muy alto. Esto es porque todos los procesos se
+    bloquean, incluso el proceso principal, y nadie pide la CPU, por lo que la
+    coge idle. En burstMix también hay mucho tiempo de usuario en idle. Esto
+    puede deberse al mismo motivo que en burstIO, aunque podría ser menor debido
+    al mejor arovechamiento del tiempo.
+
+
+    /////////////////////
+    // Nota sobre read()
+    //    Parece que el tiempo de sistema en todas las ejecuciones y en todos
+    //    los procesos es 0. Da la impresión de que esto no debería ser así:
+    //    los procesos que han ejecutado la llamada a sistema read() deberían
+    //    mostrar un poco de tiempo de sistema.
+    //
+    //    No sabemos por qué sucede esto. En los procesos que no llaman a read()
+    //    es cierto que no debería haber ningún tiempo de sistema
+    /////////////////////
