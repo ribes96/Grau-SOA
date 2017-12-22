@@ -30,9 +30,9 @@ main (int argc, char *argv[])
 
   gettimeofday (&init_t, NULL);
 
-  if (argc != 5)
+  if (argc != 6)
     {
-      sprintf (buf, "usage: %s num_clients num_it hostname port\n", argv[0]);
+      sprintf (buf, "usage: %s num_clients num_it hostname port server_name\n", argv[0]);
       write (1, buf, strlen (buf));
       exit (1);
     }
@@ -51,7 +51,8 @@ main (int argc, char *argv[])
 	  perror ("Error creating client process");
 	  exit (1);
 	case 0:
-	  sprintf (buf, "stats/ExCo/client_%d", i);
+        //stats/server_name/nclients/niters/client_d
+	  sprintf (buf, "stats/%s/%d/%s/client_%d",argv[5],nclients,argv[2],i);
 	  fd = open (buf, O_CREAT | O_TRUNC | O_WRONLY, 0600);
 	  if (fd < 0)
 	    {
