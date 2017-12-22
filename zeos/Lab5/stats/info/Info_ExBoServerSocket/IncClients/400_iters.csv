@@ -1,0 +1,9 @@
+ExBoServerSocketWith 400 iterations,,;
+Requested clients, real clients, time;
+10,10,44.7;
+15,15,53.733333333333334;
+20,20,74.95;
+25,25,117.2;
+30,30,133.7;
+35,0,no clients served;
+40,0,no clients served;

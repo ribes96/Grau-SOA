@@ -1,0 +1,11 @@
+BoCoServerSocketWith 35 clients,;
+Number iterations, time;
+50,21.0;
+100,no clients served;
+150,no clients served;
+200,no clients served;
+250,no clients served;
+300,no clients served;
+350,no clients served;
+400,no clients served;
+450,no clients served;

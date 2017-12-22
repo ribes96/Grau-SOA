@@ -1,0 +1,9 @@
+UnCoServerSocketWith 250 iterations,,;
+Requested clients, real clients, time;
+10,10,38.1;
+15,15,42.4;
+20,20,53.9;
+25,25,51.96;
+30,30,84.23333333333333;
+35,0,no clients served;
+40,0,no clients served;
