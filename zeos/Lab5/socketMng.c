@@ -15,10 +15,10 @@
 #include <unistd.h>
 
 
-// Create a socket and initialize it to be able to accept 
+// Create a socket and initialize it to be able to accept
 // connections.
-// It returns the virtual device associated to the socket that should be used 
-// in the accept system call, to get the virtual device associated to 
+// It returns the virtual device associated to the socket that should be used
+// in the accept system call, to get the virtual device associated to
 // the connection
 //
 
@@ -28,11 +28,11 @@
 int
 createServerSocket (int port)
 {
-    
+
     //custom 30/11/2017
 //     int FAMILY = AF_INET;
 //     int CONNECT_TYPE = SOCK_STREAM;
-    
+
     int error;
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
@@ -75,11 +75,11 @@ acceptNewConnections (int socket_fd)
     return client_fd;
 }
 
-// Returns the socket virtual device that the client should use to access 
-// the socket, if the connection is successfully established 
+// Returns the socket virtual device that the client should use to access
+// the socket, if the connection is successfully established
 // and -1 in case of error
 //
-// Connect system call requires the address of the 
+// Connect system call requires the address of the
 // server socket to request the connection and the size of that address.
 //
 
@@ -108,14 +108,14 @@ clientConnection (char *host_name, int port)
   }
   memcpy((char *)&serv_addr.sin_addr.s_addr, (char *) hent->h_addr, hent->h_length);
   serv_addr.sin_port = htons(port);
-  serv_addr.sin_family = PF_INET; 
+  serv_addr.sin_family = PF_INET;
 
   ret = connect (socket_fd, (struct sockaddr *) &serv_addr, sizeof (serv_addr));
   if (ret < 0)
   {
 	  close (socket_fd);
 	  return (ret);
-  } 
+  }
 
   return socket_fd;
 
@@ -126,4 +126,3 @@ int deleteSocket (int socket_fd)
 {
   close (socket_fd);
 }
-
